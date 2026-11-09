@@ -100,6 +100,7 @@ namespace Obsidot
             }
         }
         public void ShotSwing(int i) { PointTo(i); }
+        public void ShotResetDots() { dotSpr = null; }
         public void ShotFocus(int minutes, double t) { timerState = 1; setT = t; Settings.Focus = minutes; }
 
         public void ShotBands(float v) { for (int b = 0; b < bands.Length; b++) bands[b] = v; }

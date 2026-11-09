@@ -311,7 +311,7 @@ namespace Obsidot
             }
         }
 
-        public Bitmap Shot(double a, int i = -1) // shots harness
+        public Bitmap Shot(double a, int i = -1, bool clear = false) // shots harness; clear: no backdrop
         {
             if (i >= 0) { idx = i; Prepare(); }
             if (idx < 0) { idx = 44; Prepare(); }
@@ -320,7 +320,7 @@ namespace Obsidot
             var b = new Bitmap(LW, LH);
             using (var g = Graphics.FromImage(b))
             {
-                using (var lg = new LinearGradientBrush(new Rectangle(0, 0, LW, LH), Color.FromArgb(38, 52, 92), Color.FromArgb(150, 120, 140), 60f)) g.FillRectangle(lg, 0, 0, LW, LH);
+                if (!clear) using (var lg = new LinearGradientBrush(new Rectangle(0, 0, LW, LH), Color.FromArgb(38, 52, 92), Color.FromArgb(150, 120, 140), 60f)) g.FillRectangle(lg, 0, 0, LW, LH);
                 g.DrawImage(Surface, 0, 0, LW, LH);
             }
             return b;
