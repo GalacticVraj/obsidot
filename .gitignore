@@ -1,0 +1,4 @@
+# the built app goes in Releases, not in the source
+*.exe
+release/
+*.pdb
