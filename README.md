@@ -13,16 +13,16 @@ and has a tiny pet that taps you on the shoulder when something matters.
 
 <br>
 
-<a href="https://github.com/GalacticVraj/obsiot/releases/latest/download/Obsidot.zip"><img alt="Download for Windows" src="https://img.shields.io/badge/Download_for_Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="46"></a>
+<a href="https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip"><img alt="Download for Windows" src="https://img.shields.io/badge/Download_for_Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="46"></a>
 
 <br><br>
 
-<a href="https://github.com/GalacticVraj/obsiot/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/GalacticVraj/obsiot?style=flat-square&label=release&color=e82420"></a>
+<a href="https://github.com/GalacticVraj/obsidot/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/GalacticVraj/obsidot?style=flat-square&label=release&color=e82420"></a>
 <img alt="Windows 10 and 11" src="https://img.shields.io/badge/Windows-10_%7C_11-111?style=flat-square&logo=windows11&logoColor=white">
 <img alt="Size" src="https://img.shields.io/badge/download-113_KB-111?style=flat-square">
 <img alt="No install" src="https://img.shields.io/badge/install-none-111?style=flat-square">
 <img alt="Offline" src="https://img.shields.io/badge/internet-never-111?style=flat-square">
-<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/GalacticVraj/obsiot?style=flat-square&color=111"></a>
+<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/GalacticVraj/obsidot?style=flat-square&color=111"></a>
 
 <br><br>
 
@@ -36,7 +36,7 @@ and has a tiny pet that taps you on the shoulder when something matters.
 
 ## Get it in 10 seconds
 
-1. **[Download Obsidot.zip](https://github.com/GalacticVraj/obsiot/releases/latest/download/Obsidot.zip)** and unzip it anywhere.
+1. **[Download Obsidot.zip](https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip)** and unzip it anywhere.
 2. Double-click **`Obsidot.exe`**. It asks what to call you.
 3. Press **Win + D**. It's on your desktop, saying good morning.
 
@@ -227,7 +227,7 @@ No. It photographs your screen and plays on the photo. Your icons and files are 
 <details>
 <summary><b>Does it work on high-DPI screens and multiple monitors?</b></summary>
 <br>
-It's per-monitor DPI aware and has been tested on a high-DPI laptop screen. Multiple monitors should work. If something looks off on yours, please <a href="https://github.com/GalacticVraj/obsiot/issues">open an issue</a>.
+It's per-monitor DPI aware and has been tested on a high-DPI laptop screen. Multiple monitors should work. If something looks off on yours, please <a href="https://github.com/GalacticVraj/obsidot/issues">open an issue</a>.
 </details>
 
 ## Build it yourself
@@ -235,8 +235,8 @@ It's per-monitor DPI aware and has been tested on a high-DPI laptop screen. Mult
 No Visual Studio and no SDK: it compiles with the C# compiler that's already inside Windows.
 
 ```bat
-git clone https://github.com/GalacticVraj/obsiot
-cd obsiot
+git clone https://github.com/GalacticVraj/obsidot
+cd obsidot
 build.cmd
 ```
 
