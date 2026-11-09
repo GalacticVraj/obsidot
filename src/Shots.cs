@@ -175,28 +175,62 @@ namespace Obsidot
             c.card.Shot(1.6, 2, true).Save(Path.Combine(dir, "thought-card.png"), ImageFormat.Png);
             using (var ro = new Roamer(c.pet, "NEW FILE", "PROJECT-NOTES.PDF", null, 25)) ro.Render(U.Now + 1).Save(Path.Combine(dir, "pet-sign.png"), ImageFormat.Png);
         }
-        // `Obsidot.exe --assault <dir>`: Desktop Assault on a made-up desktop (never your real screen), every weapon, as frames
-        public static void AssaultDemo(string dir)
+        // `Obsidot.exe --assault <dir> [real]`: Desktop Assault, every weapon, as frames;
+        // on a made-up desktop, or with `real` on a snapshot of your actual screen and icons
+        public static void AssaultDemo(string dir, bool real, string window)
         {
             Directory.CreateDirectory(dir);
             var c = new Crystal(); float S = U.S;
             var scr = System.Windows.Forms.Screen.PrimaryScreen.Bounds; int w = scr.Width, h = scr.Height;
-            Bitmap wall; List<DIcon> icons; var screen = Staged(w, h, out wall, out icons);
+            Bitmap wall = null, screen = null; List<DIcon> icons = null;
+            if (!real) screen = Staged(w, h, out wall, out icons);
+            else       // your wallpaper and your desktop icons, redrawn: open windows never get in the shot
+            {
+                icons = Desk.Read(scr); wall = Desk.Wallpaper(scr.Size) ?? new Bitmap(w, h);
+                screen = new Bitmap(wall);
+                using (var g = Graphics.FromImage(screen))
+                using (var fmt = new StringFormat { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter })
+                {
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                    var f = U.F("Segoe UI", 9 * S);
+                    if (window != null) using (var win = new Bitmap(window))   // one window open on top, like a real afternoon
+                    {
+                        var r = new RectangleF(w * 0.17f, h * 0.09f, w * 0.68f, 0); r.Height = r.Width * win.Height / win.Width + 34 * S;
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        for (int k = 6; k >= 1; k--) using (var p = U.Round(r.X - k * 3 * S, r.Y - k * 2 * S, r.Width + k * 6 * S, r.Height + k * 6 * S, 12 * S)) using (var br = new SolidBrush(Color.FromArgb(14, 0, 0, 0))) g.FillPath(br, p);
+                        using (var p = U.Round(r.X, r.Y, r.Width, r.Height, 8 * S)) { g.SetClip(p); using (var br = new SolidBrush(Color.FromArgb(30, 30, 34))) g.FillRectangle(br, r); }
+                        using (var br = new SolidBrush(Color.FromArgb(170, 170, 178))) g.DrawString("github.com/GalacticVraj/obsidot", U.F("Segoe UI", 9.5f * S), br, r.X + 16 * S, r.Y + 8 * S);
+                        using (var br = new SolidBrush(Color.FromArgb(60, 60, 64))) g.DrawString("–   □   ✕", U.F("Segoe UI", 10 * S), br, r.Right - 92 * S, r.Y + 7 * S);
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.DrawImage(win, new RectangleF(r.X, r.Y + 34 * S, r.Width, r.Height - 34 * S));
+                        g.ResetClip();
+                    }
+                    foreach (var d in icons)
+                    {
+                        if (d.Img != null) g.DrawImage(d.Img, Rectangle.Round(d.Icon));
+                        var lr = new RectangleF(d.Label.X, d.Label.Y, d.Label.Width, Math.Max(d.Label.Height, 34 * S));
+                        using (var sh = new SolidBrush(Color.FromArgb(170, 0, 0, 0))) g.DrawString(d.Name, f, sh, new RectangleF(lr.X + S, lr.Y + S, lr.Width, lr.Height), fmt);
+                        g.DrawString(d.Name, f, Brushes.White, lr, fmt);
+                    }
+                }
+                File.WriteAllLines(Path.Combine(dir, "_icons.txt"), icons.ConvertAll(d => d.Name).ToArray());
+            }
             screen.Save(Path.Combine(dir, "_staged.png"), ImageFormat.Png);
             var game = new Assault(c, new PointF(w * 0.7f, h * 0.3f), screen, wall, icons);
             game.LoadWorld();
             double fps = 15, T0 = U.Now + 3000; game.Begin(T0);
-            var cam = new Rectangle(0, (int)(h * 0.11f), (int)(w * 0.78f), (int)(w * 0.78f / 1.6f));   // framed on the action, 16:10
+            var cam = real ? new Rectangle(0, 0, w, h) : new Rectangle(0, (int)(h * 0.11f), (int)(w * 0.78f), (int)(w * 0.78f / 1.6f));   // framed on the action, 16:10
+            int ow = 800, oh = real ? (int)Math.Round(800.0 * h / w) : 500;
             for (int i = 0; i < 135; i++)
             {
                 double now = T0 + i / fps;
                 for (int k = 1; k <= 3; k++) { double tt = now - (3 - k) / (fps * 3); game.Script(tt - T0, tt); game.Step(1 / (fps * 3), tt); } // three physics steps a frame
                 var f = game.Frame(now);
-                using (var b = new Bitmap(800, 500))
+                using (var b = new Bitmap(ow, oh))
                 using (var g = Graphics.FromImage(b))
                 {
                     g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    g.DrawImage(f, new Rectangle(0, 0, 800, 500), cam, GraphicsUnit.Pixel);
+                    g.DrawImage(f, new Rectangle(0, 0, ow, oh), cam, GraphicsUnit.Pixel);
                     b.Save(Path.Combine(dir, i.ToString("000") + ".png"), ImageFormat.Png);
                 }
             }
