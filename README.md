@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/wordmark-dark.png">
@@ -7,184 +7,86 @@
 
 <h3>The clock that lives on your desktop.</h3>
 
-It greets you by name. It dances to your music. It keeps your notes and guards your focus.<br>
-A tiny pet sits on top. And one key turns your whole screen into glass you can shatter.
-
-<br>
+<p>It greets you by name. It dances to your music. It keeps your notes and guards your focus.<br>A tiny pet sits on top. And one key turns your whole screen into glass you can shatter.</p>
 
 <img src="docs/media/clock.png" alt="Obsidot, a dot-matrix clock on the desktop" width="320">
 
-<br><br>
+<p><a href="https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip"><img alt="Download Obsidot for Windows" src="https://img.shields.io/badge/Download%20for%20Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="52"></a></p>
 
-<a href="https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip"><img alt="Download Obsidot for Windows" src="https://img.shields.io/badge/%E2%AC%87%20%20Download%20for%20Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="52"></a>
+<p><sub><b>113 KB</b> &nbsp;·&nbsp; Windows 10 &amp; 11 &nbsp;·&nbsp; no installer &nbsp;·&nbsp; no account &nbsp;·&nbsp; never goes online &nbsp;·&nbsp; free &amp; open source</sub></p>
 
-<sub><b>113 KB</b> &nbsp;·&nbsp; Windows 10 &amp; 11 &nbsp;·&nbsp; no installer &nbsp;·&nbsp; no account &nbsp;·&nbsp; never goes online &nbsp;·&nbsp; free &amp; open source</sub>
-
-<br><br>
-
-<a href="https://github.com/GalacticVraj/obsidot/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/GalacticVraj/obsidot?style=flat-square&label=release&color=e82420"></a>
-<img alt="Windows 10 and 11" src="https://img.shields.io/badge/Windows-10_%7C_11-111?style=flat-square&logo=windows11&logoColor=white">
-<img alt="Zero dependencies" src="https://img.shields.io/badge/dependencies-zero-111?style=flat-square">
-<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/GalacticVraj/obsidot?style=flat-square&color=111"></a>
+<p><a href="https://github.com/GalacticVraj/obsidot/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/GalacticVraj/obsidot?style=flat-square&label=release&color=e82420"></a> <img alt="Windows 10 and 11" src="https://img.shields.io/badge/Windows-10_%7C_11-111?style=flat-square&logo=windows11&logoColor=white"> <img alt="Zero dependencies" src="https://img.shields.io/badge/dependencies-zero-111?style=flat-square"> <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/GalacticVraj/obsidot?style=flat-square&color=111"></a></p>
 
 <br><br>
 
-<b><a href="#-your-screen-is-made-of-glass">💥 Desktop Assault</a></b> &nbsp;·&nbsp; <a href="#-it-knows-your-name">👋 Greeting</a> &nbsp;·&nbsp; <a href="#-it-dances-to-your-music">🎵 Music</a> &nbsp;·&nbsp; <a href="#-a-pet-that-lives-on-your-desk">🐾 The pet</a> &nbsp;·&nbsp; <a href="#-built-for-focus">⌛ Focus</a> &nbsp;·&nbsp; <a href="#-get-it-in-10-seconds">📥 Download</a>
+<h3>💥 Your screen is made of glass</h3>
 
-</div>
+<p>Press <kbd>Alt</kbd> + <kbd>K</kbd> on <b>any</b> screen (Chrome, a PDF, your desktop) and it freezes into glass.<br>Crack it. Shatter it. Pull it into a black hole. Press <kbd>Esc</kbd>, and everything is exactly as it was.</p>
 
-<br>
+<img src="docs/media/assault.gif" width="720" alt="Desktop Assault: a code editor shatters like glass and a black hole swallows the pieces">
 
-<div align="center">
+<p><kbd>1</kbd> <b>Pixel Blaster</b> &nbsp;&nbsp; <kbd>2</kbd> <b>Laser Arc</b> &nbsp;&nbsp; <kbd>3</kbd> <b>Crystal Railcannon</b> &nbsp;&nbsp; <kbd>4</kbd> <b>Black Hole</b><br>📁 folders break into chunks &nbsp;·&nbsp; 🖼️ photos burst into pixels &nbsp;·&nbsp; 📄 documents flutter apart &nbsp;·&nbsp; 🗑️ the Recycle Bin detonates</p>
 
-## 💥 Your screen is made of glass
+<p><sub><b>Nothing on disk is ever touched.</b> It plays on a snapshot of your screen. Filmed here on a demo desktop; on yours, it's your own windows and icons.</sub></p>
 
-Press <kbd>Alt</kbd> + <kbd>K</kbd> on **any** screen (Chrome, a PDF, your desktop) and it freezes into glass.<br>
-Crack it. Shatter it. Pull it into a black hole. Press <kbd>Esc</kbd>, and everything is exactly as it was.
+<br><br>
 
-<br>
+<img src="docs/media/greeting.png" width="280" alt="GOOD MORNING VRAJ scrolling across the dots">
 
-<img src="docs/media/assault.gif" width="620" alt="Desktop Assault: the screen shatters like glass and a black hole swallows it">
+<h3>👋 It knows your name</h3>
 
-<sub>Desktop Assault, filmed on a demo desktop. On yours, it's your own windows and your own icons.</sub>
+<p>The first time it starts, dots stream in from every edge of your screen and assemble the clock. Then it asks what to call you.<br>From then on it's <b>GOOD MORNING</b>, <b>GOOD EVENING</b>, <b>HELLO NIGHT OWL</b>, and <b>WELCOME BACK</b>, by name, scrolling through the dots.</p>
 
-</div>
-
-<br>
-
-| Weapon | | Your icons | |
-|:--|:--|:--|:--|
-| <kbd>1</kbd> **Pixel Blaster** | rapid bolts; three hits and a pane falls out | 📁 **Folders** | break into heavy chunks |
-| <kbd>2</kbd> **Laser Arc** | a bending beam you sweep across the screen | 🖼️ **Photos** | burst into their own pixels |
-| <kbd>3</kbd> **Crystal Railcannon** | charge, release, one beam through everything | 📄 **Documents** | flutter apart like paper |
-| <kbd>4</kbd> **Black Hole** | drags everything into a spiral, then collapses | 🗑️ **Recycle Bin** | detonates |
-
-> **Nothing on disk is ever touched.** Desktop Assault plays on a snapshot of your screen: your files, icons and windows are never moved, renamed or deleted. Clear every icon and the desktop rebuilds itself.
-
-<br>
-
----
-
-<br>
-
-<img align="right" src="docs/media/greeting.png" width="270" alt="GOOD MORNING VRAJ scrolling across the dots">
-
-## 👋 It knows your name
-
-The first time it starts, dots stream in from every edge of your screen and assemble the clock. Then it asks what to call you.
-
-From then on it's **GOOD MORNING**, **GOOD EVENING**, **HELLO NIGHT OWL**, and **WELCOME BACK** when you return after a while away, by name, scrolling through the matrix like a marquee.
-
-Right-click the little pet any time to change your name.
-
-<br clear="right">
-<br>
+<br><br>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/music-dark.png">
-  <img align="left" src="docs/media/music-light.png" width="330" alt="Rays of dots dancing to music around the clock">
+  <img src="docs/media/music-light.png" width="340" alt="Rays of dots dancing to music around the clock">
 </picture>
 
-## 🎵 It dances to your music
+<h3>🎵 It dances to your music</h3>
 
-Play anything (Spotify, YouTube, a game) and rays of dots shoot out of the rim like a round spectrum analyser: bass at twelve o'clock, treble at six, the loudest tip glowing red.
+<p>Play anything (Spotify, YouTube, a game) and rays of dots shoot out of the rim like a round spectrum analyser:<br>bass at the top, treble at the bottom, the loudest tip glowing red. The edge turns <b>liquid</b> and wobbles with every kick drum.</p>
 
-The edge of the puck turns **liquid** and wobbles with every kick drum.
+<br><br>
 
-Silence puts it back to sleep.
+<p><img src="docs/media/pet.png" width="250" alt="The desk pet watching the cursor and jumping for a heart">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="docs/media/pet-sign.png" width="260" alt="The pet holding a NEW FILE sign"></p>
 
-<br clear="left">
-<br>
+<h3>🐾 A pet that lives on your desk</h3>
 
-<img align="right" src="docs/media/pet.png" width="260" alt="The desk pet watching the cursor and jumping for a heart">
+<p>A tiny black-glass creature sits on top. Its eyes follow your cursor; it blinks, hops along the rim and bobs to the beat.<br>Click it for a heart. Walk away and it dozes off. When something matters, <b>just the pet</b> drops onto your window with a sign:<br><b>FOCUS DONE</b> &nbsp;·&nbsp; <b>BREAK TIME</b> &nbsp;·&nbsp; <b>BATTERY 12%</b> &nbsp;·&nbsp; <b>NEW FILE</b></p>
 
-## 🐾 A pet that lives on your desk
+<br><br>
 
-A tiny black-glass creature sits on top of the clock. Its eyes follow your cursor. It blinks, hops along the rim, and bobs to the beat. Click it and it jumps for a heart. Walk away and it dozes off, Z's drifting up and its antenna pulsing like a standby light.
+<p><img src="docs/media/focus.png" width="250" alt="Winding the focus timer">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="docs/media/menu.png" width="290" alt="The menu: a red pointer turning round six buttons"></p>
 
-**When something matters, just the pet drops onto the window you're working in, holding a sign:**
+<h3>⌛ Built for focus</h3>
 
-<img align="right" src="docs/media/pet-sign.png" width="300" alt="The pet holding a NEW FILE sign">
+<p><b>Focus Timer:</b> scroll to wind the red arc like a kitchen timer, click, and the dots count down.<br><b>Scratchpad:</b> <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> from any app slides out a notepad that saves as you type.<br><b>The menu:</b> right-click or scroll, and a red pointer turns round six buttons, one soft haptic click at a time.</p>
 
-- **FOCUS DONE**: your session ended
-- **BREAK TIME**: 50 minutes without a pause
-- **BATTERY 12%**: plug in soon
-- **NEW FILE**: a download finished; click to open its folder
+<br><br>
 
-It never interrupts a full-screen film or game.
+<p><img src="docs/media/hoops.png" width="270" alt="Vector Hoops: throwing a light orb at a hoop">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="docs/media/thought-card.png" width="300" alt="A thought card"></p>
 
-<br clear="right">
-<br>
+<h3>🏀 And a little play</h3>
 
-<img align="left" src="docs/media/focus.png" width="260" alt="Winding the focus timer">
+<p><b>Vector Hoops:</b> pull and release to throw a light orb through a hoop inside the clock. From the third basket, the pet keeps goal.<br><b>Thought cards:</b> click the clock for a thought, a strange fact or a bit of everyday magic, each with one line of why.</p>
 
-## ⌛ Built for focus
+<br><br>
 
-**Focus Timer.** Scroll to wind the red arc like a kitchen timer (5 to 60 minutes) and click. The matrix counts down; at zero it buzzes like a phone on a desk, and the pet comes to tell you.
+<h3>📥 Get it in 10 seconds</h3>
 
-**Scratchpad.** <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> from any app slides out a black glass notepad. It saves as you type.
+<p><a href="https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip"><img alt="Download Obsidot for Windows" src="https://img.shields.io/badge/Download%20for%20Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="52"></a></p>
 
-<br clear="left">
-<br>
+<p><b>1.</b> Unzip it anywhere &nbsp;&nbsp;→&nbsp;&nbsp; <b>2.</b> Double-click <code>Obsidot.exe</code> and tell it your name &nbsp;&nbsp;→&nbsp;&nbsp; <b>3.</b> Press <kbd>Win</kbd> + <kbd>D</kbd></p>
 
-<img align="right" src="docs/media/menu.png" width="300" alt="The menu: a red pointer turning round six buttons">
-
-## 👑 A menu with a crown
-
-Right-click or scroll. Six buttons stay still while a red pointer turns inside the rim, one notch at a time, each step a soft haptic click and a shiver of the puck.
-
-Click the puck itself to choose, like pressing a watch crown.
-
-<br clear="right">
-<br>
-
-<img align="left" src="docs/media/hoops.png" width="270" alt="Vector Hoops: throwing a light orb at a hoop">
-
-## 🏀 And a little play
-
-**Vector Hoops.** Pull and release to throw a light orb at a hoop inside the clock. Clean swishes climb a musical scale. From the third basket, the pet starts keeping goal.
-
-**Thought cards.** Click the clock and a card unfolds: a thought, a strange fact, or a bit of everyday magic, each with one line of why.
-
-<br clear="left">
-
-<div align="center">
-<img src="docs/media/thought-card.png" width="360" alt="A thought card">
-</div>
-
-<br>
-
----
-
-<br>
-
-<div align="center">
-
-## 📥 Get it in 10 seconds
+<p><sub>"Windows protected your PC"? Click <b>More info → Run anyway</b>. SmartScreen is just careful with new apps from independent developers; every line Obsidot runs is in <a href="src">src/</a>.</sub></p>
 
 </div>
 
-1. **[Download Obsidot.zip](https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip)** (113 KB) and unzip it anywhere.
-2. Double-click **`Obsidot.exe`**. It asks what to call you.
-3. Press <kbd>Win</kbd> + <kbd>D</kbd>. It's on your desktop, saying good morning.
-
-<details>
-<summary><b>Windows says "Windows protected your PC"?</b></summary>
 <br>
 
-That's SmartScreen being careful with a new app from an independent developer. Click **More info → Run anyway**. Obsidot is open source: every line it runs is in [`src/`](src), and you can [build it yourself](#build-it-yourself) in one step.
-</details>
-
-<details>
-<summary><b>Start it with Windows</b></summary>
-<br>
-
-Press <kbd>Win</kbd> + <kbd>R</kbd>, type `shell:startup`, press Enter, and drop a shortcut to `Obsidot.exe` into the folder that opens.
-</details>
-
-<br>
-
-## Controls
+### Controls
 
 | Do this | And |
 |---|---|
@@ -196,27 +98,22 @@ Press <kbd>Win</kbd> + <kbd>R</kbd>, type `shell:startup`, press Enter, and drop
 | <kbd>Alt</kbd> + <kbd>K</kbd> | Desktop Assault · <kbd>1</kbd>–<kbd>4</kbd> pick a weapon · <kbd>Esc</kbd> to leave |
 | <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> | Scratchpad |
 
-## Light on your PC
+**Start with Windows:** press <kbd>Win</kbd> + <kbd>R</kbd>, type `shell:startup`, and drop a shortcut to `Obsidot.exe` into that folder.
 
-It lives *behind* your apps, on the desktop, and only wakes up when you can see it.
+### Light on your PC
 
-| | |
-|---|---|
-| **Resting** | redraws 4 times a second, about 1 ms each: under 1% of one CPU core |
-| **Covered by a window** | practically asleep |
-| **Memory** | about 40 MB |
-| **On disk** | one 219 KB file. Every sound is synthesized live; there are no audio files, no images, no dependencies |
+It lives *behind* your apps, on the desktop, and only wakes when you can see it: about **1% of one CPU core** at rest, practically nothing while a window covers it, about **40 MB** of memory. One 219 KB file: every sound is synthesized live, with no audio files, no images and no dependencies.
 
-## Privacy
+### Privacy
 
-Obsidot **never connects to the internet.** Nothing you do is recorded, stored or sent anywhere.
+Obsidot **never connects to the internet**, and nothing you do is recorded, stored or sent anywhere.
 
-- **Music:** it reads Windows' output level, and while something plays it reads the sound mix in a small buffer that's constantly overwritten.
-- **"Are you away?":** it reads the time since your last key press or mouse move. It never sees *what* you type.
-- **Downloads:** it notices new file names arriving in your Downloads folder, and nothing else.
+- **Music:** it reads Windows' output level, and while something plays, the sound mix in a small buffer that's constantly overwritten.
+- **Away or here:** it reads the time since your last key press or mouse move, never *what* you typed.
+- **Downloads:** it notices new file names arriving in your Downloads folder, nothing else.
 - **Your data:** your name, settings and notes live in `%APPDATA%\Obsidot`. Delete that folder and they're gone.
 
-## FAQ
+### FAQ
 
 <details>
 <summary><b>Where did it go? I can't see it.</b></summary>
@@ -239,10 +136,10 @@ No. It photographs your screen and plays on the photo. Your icons and files are 
 <details>
 <summary><b>Does it work on high-DPI screens and multiple monitors?</b></summary>
 <br>
-It's per-monitor DPI aware and has been tested on a high-DPI laptop screen. Multiple monitors should work. If something looks off on yours, please <a href="https://github.com/GalacticVraj/obsidot/issues">open an issue</a>.
+It's per-monitor DPI aware and has been tested on a high-DPI laptop screen. Multiple monitors should work; if something looks off on yours, please <a href="https://github.com/GalacticVraj/obsidot/issues">open an issue</a>.
 </details>
 
-## Build it yourself
+### Build it yourself
 
 No Visual Studio and no SDK: it compiles with the C# compiler that's already inside Windows.
 
@@ -271,15 +168,13 @@ About 4,500 lines of C# 5, WinForms and GDI+, no dependencies.
 
 <div align="center">
 
-### Your desktop has been waiting for this.
+<img src="docs/media/icon.png" width="56" alt="">
 
-<a href="https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip"><img alt="Download Obsidot for Windows" src="https://img.shields.io/badge/%E2%AC%87%20%20Download%20for%20Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="52"></a>
+<h3>Your desktop has been waiting for this.</h3>
 
-If Obsidot made your desk a little nicer, **⭐ star the repo**. It's how other people find it.
+<p><a href="https://github.com/GalacticVraj/obsidot/releases/latest/download/Obsidot.zip"><img alt="Download Obsidot for Windows" src="https://img.shields.io/badge/Download%20for%20Windows-free-e82420?style=for-the-badge&logo=windows11&logoColor=white" height="52"></a></p>
 
-<br>
-
-<img src="docs/media/icon.png" width="48" alt="">
+If Obsidot made your desk a little nicer, <b>⭐ star the repo</b>. It's how other people find it.
 
 <sub>Made with care by <a href="https://github.com/GalacticVraj">GalacticVraj</a> · <a href="LICENSE">MIT License</a></sub>
 

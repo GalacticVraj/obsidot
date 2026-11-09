@@ -302,43 +302,42 @@ namespace Obsidot
         PointF At(float fx, float fy) { return new PointF(scr.Width * fx, scr.Height * fy); }
         public void Script(double t, double now)
         {
-            Func<int, PointF> ic = i => i < targets.Count ? targets[i].C : At(0.1f, 0.2f);
-            if (t < 0.7) { M = Lerp(At(0.5f, 0.5f), At(0.47f, 0.33f), t / 0.7); return; }
-            if (t < 2.3)       // Pixel Blaster across the window glass, then into a folder
+            Func<int, PointF> ic = i => i < targets.Count ? targets[i].C : At(0.03f, 0.2f);
+            if (t < 0.8) { M = Lerp(At(0.4f, 0.5f), At(0.28f, 0.32f), t / 0.8); return; }
+            if (t < 2.6)       // Pixel Blaster across the code editor's glass, then into a folder
             {
                 if (weapon != 0) SetWeapon(0);
                 fireDown = true;
-                M = t < 1.6 ? Lerp(At(0.47f, 0.33f), At(0.66f, 0.52f), (t - 0.7) / 0.9) : Lerp(At(0.66f, 0.52f), ic(0), (t - 1.6) / 0.35);
+                M = t < 2.0 ? Lerp(At(0.28f, 0.32f), At(0.5f, 0.56f), (t - 0.8) / 1.2) : Lerp(At(0.5f, 0.56f), ic(0), (t - 2.0) / 0.4);
                 return;
             }
-            if (t < 2.5) { fireDown = false; M = Lerp(ic(0), ic(1), (t - 2.3) / 0.2); return; }
-            if (t < 4.0)       // Laser Arc down the column of icons
+            if (t < 2.8) { fireDown = false; M = Lerp(ic(0), ic(1), (t - 2.6) / 0.2); return; }
+            if (t < 4.4)       // Laser Arc down the column of icons
             {
                 if (weapon != 1) SetWeapon(1);
                 fireDown = true;
-                double k = (t - 2.5) / 1.5; int a = Math.Min(3, 1 + (int)(k * 3)); M = Lerp(ic(a), ic(Math.Min(a + 1, 4)), (k * 3) % 1 * 0.35);
+                double k = (t - 2.8) / 1.6; int a = Math.Min(3, 1 + (int)(k * 3)); M = Lerp(ic(a), ic(Math.Min(a + 1, 4)), (k * 3) % 1 * 0.35);
                 return;
             }
-            if (t < 4.2) { fireDown = false; M = Lerp(M, ic(6), (t - 4.0) / 0.2); return; }
-            if (t < 5.1)       // Crystal Railcannon: charge, then one beam through the screen
+            if (t < 4.6) { fireDown = false; M = Lerp(M, ic(6), (t - 4.4) / 0.2); return; }
+            if (t < 5.6)       // Crystal Railcannon: charge, then one beam through the editor into the Recycle Bin
             {
                 if (weapon != 2) SetWeapon(2);
-                if (chargeT0 < 0 && t < 4.95) { chargeT0 = now; fireDown = true; }
-                M = ic(6);                                         // straight at the Recycle Bin
-                if (t >= 4.95 && chargeT0 >= 0) { fireDown = false; FireRail(now); }
+                if (chargeT0 < 0 && t < 5.35) { chargeT0 = now; fireDown = true; }
+                M = ic(6);
+                if (t >= 5.35 && chargeT0 >= 0) { fireDown = false; FireRail(now); }
                 return;
             }
-            if (t < 7.6)       // the Black Hole: drag it across the window, then let go
+            if (t < 8.0)       // the Black Hole: up past the last icons, into the editor, then let go
             {
                 if (weapon != 3) SetWeapon(3);
-                if (holeT0 < 0 && t < 7.4) { holeT0 = holeTick = now; holeP = M; fireDown = true; }
-                M = t < 6.0 ? Lerp(ic(6), ic(4), (t - 5.1) / 0.9) : Lerp(ic(4), At(0.58f, 0.42f), (t - 6.0) / 1.2); // up past the last icons, into the window
-                if (t >= 7.4 && holeT0 >= 0) { fireDown = false; Collapse(now); }
+                if (holeT0 < 0 && t < 7.8) { holeT0 = holeTick = now; holeP = M; fireDown = true; }
+                M = t < 6.5 ? Lerp(ic(6), ic(4), (t - 5.6) / 0.9) : Lerp(ic(4), At(0.34f, 0.5f), (t - 6.5) / 1.1);
+                if (t >= 7.8 && holeT0 >= 0) { fireDown = false; Collapse(now); }
                 return;
             }
-            fireDown = false; M = Lerp(At(0.58f, 0.42f), At(0.62f, 0.38f), (t - 7.6) / 1.5);
+            fireDown = false; M = Lerp(At(0.34f, 0.5f), At(0.4f, 0.44f), (t - 8.0) / 1.0);
         }
-
         public void DemoHole(double t) { weapon = 3; fireDown = false; holeT0 = t - 1.3; holeP = M = new PointF(scr.Width * 0.45f, scr.Height * 0.45f); }
 
         // ---------------- loop ----------------
