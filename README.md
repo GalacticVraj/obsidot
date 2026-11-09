@@ -9,7 +9,7 @@
 
 A matte black glass puck with a dot-matrix display behind the glass.<br>
 It greets you by name, dances to your music, keeps your notes, runs your focus sessions,<br>
-and has a tiny pet that taps you on the shoulder when something matters.
+has a tiny pet that taps you on the shoulder, and hides a game that turns your whole screen to glass.
 
 <br>
 
@@ -30,6 +30,10 @@ and has a tiny pet that taps you on the shoulder when something matters.
 
 <sub>One 219 KB file. No installer, no account, no internet. Unzip, double-click, done.</sub>
 
+<br><br>
+
+<b><a href="#-your-screen-is-made-of-glass">Desktop Assault</a></b> &nbsp;·&nbsp; <a href="#it-knows-you">It knows you</a> &nbsp;·&nbsp; <a href="#it-dances-to-your-music">Music</a> &nbsp;·&nbsp; <a href="#a-pet-that-lives-on-your-desk">The pet</a> &nbsp;·&nbsp; <a href="#built-for-focus">Focus</a> &nbsp;·&nbsp; <a href="#controls">Controls</a> &nbsp;·&nbsp; <a href="#privacy">Privacy</a>
+
 </div>
 
 <br>
@@ -46,6 +50,60 @@ and has a tiny pet that taps you on the shoulder when something matters.
 
 That's SmartScreen being careful with a new app from an independent developer. Click **More info → Run anyway**. Obsidot is open source: every line it runs is in [`src/`](src), and you can [build it yourself](#build-it-yourself) in one step.
 </details>
+
+<br>
+
+<div align="center">
+
+## 💥 Your screen is made of glass
+
+Press <kbd>Alt</kbd> + <kbd>K</kbd> on **any** screen (Chrome, a PDF, your desktop) and it freezes into glass.<br>
+Crack it. Shatter it. Pull it into a black hole. Then press <kbd>Esc</kbd> and everything is exactly as it was.
+
+<br>
+
+<img src="docs/media/assault.gif" width="560" alt="Desktop Assault: the screen shatters like glass">
+
+<sub>This is <b>Desktop Assault</b> on a demo desktop. On yours, it's your own windows and your own icons.</sub>
+
+</div>
+
+<br>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### Four weapons
+
+| | |
+|---|---|
+| **<kbd>1</kbd> Pixel Blaster** | Rapid bolts. Every hit cracks the glass; three and a pane breaks out and falls, showing your wallpaper behind. |
+| **<kbd>2</kbd> Laser Arc** | A bending beam you sweep across the screen. |
+| **<kbd>3</kbd> Crystal Railcannon** | Hold to charge, release: one beam through everything in its path. |
+| **<kbd>4</kbd> Black Hole** | Hold, and a singularity follows your cursor, dragging shards into a spiral. Let go and it collapses. |
+
+Scroll or right-click to switch. The little pet rides along on your emitter: it cheers when things break and hides its eyes from the black hole.
+
+</td>
+<td width="50%" valign="top">
+
+### Your icons become targets
+
+| | |
+|---|---|
+| 📁 **Folders** | break into heavy chunks that tumble to the floor |
+| 🖼️ **Photos** | burst into their own pixels |
+| 📄 **Documents** | flutter apart like paper |
+| 🗑️ **Recycle Bin** | detonates |
+
+Clear every icon and the desktop rebuilds itself.
+
+> **Nothing on disk is ever touched.** Desktop Assault plays on a snapshot of your screen. Your files, icons and windows are never moved, renamed or deleted.
+
+</td>
+</tr>
+</table>
 
 <br>
 
@@ -143,19 +201,11 @@ Right-click or scroll. Six buttons stay still while a red pointer turns inside t
 </tr>
 </table>
 
-## And a little chaos
+## And a little play
 
 <table>
 <tr>
 <td width="50%">
-
-### Desktop Assault · <kbd>Alt</kbd> + <kbd>K</kbd>
-
-Whatever is on your screen (Chrome, a PDF, your desktop) freezes and turns to glass. Crack it, shatter it, watch the panes fall away to your wallpaper. Your desktop icons become targets: folders break into chunks, photos burst into their own pixels, documents flutter apart like paper, and the Recycle Bin detonates.
-
-Four weapons: **Pixel Blaster**, **Laser Arc**, **Crystal Railcannon** and the **Black Hole**, which drags everything into a spiral and then collapses. The pet rides along and cheers.
-
-**Nothing on disk is ever touched.** It plays on a snapshot. Press <kbd>Esc</kbd> and your screen comes back exactly as it was.
 
 ### Vector Hoops
 
@@ -252,7 +302,7 @@ About 4,300 lines of C# 5, WinForms and GDI+, no dependencies.
 - **Desktop Assault** keeps its own 32-bit DIB back buffer, a jittered glass lattice that cracks and shatters pane by pane, and reads the real icon positions from Explorer's list view.
 - Idle-aware: 4 Hz at rest, 60 fps only while something moves, and almost nothing while covered.
 
-`Obsidot.exe --shots <folder>` renders the main states to PNG, and `--anim <folder>` renders the frames behind the GIFs on this page.
+`Obsidot.exe --shots <folder>` renders the main states to PNG; `--anim <folder>` and `--assault <folder>` render the frames behind the GIFs on this page (the Desktop Assault demo runs on a desktop it draws itself, never your real screen).
 </details>
 
 ## Support

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -174,6 +175,140 @@ namespace Obsidot
             c.pet.Roaming = false;
         }
 
+        // `Obsidot.exe --assault <dir>`: Desktop Assault on a made-up desktop (never your real screen), every weapon, as frames
+        public static void AssaultDemo(string dir)
+        {
+            Directory.CreateDirectory(dir);
+            var c = new Crystal(); float S = U.S;
+            var scr = System.Windows.Forms.Screen.PrimaryScreen.Bounds; int w = scr.Width, h = scr.Height;
+            Bitmap wall; List<DIcon> icons; var screen = Staged(w, h, out wall, out icons);
+            screen.Save(Path.Combine(dir, "_staged.png"), ImageFormat.Png);
+            var game = new Assault(c, new PointF(w * 0.84f, h * 0.2f), screen, wall, icons);
+            game.LoadWorld();
+            double fps = 12, T0 = U.Now + 3000; game.Begin(T0);
+            for (int i = 0; i < 112; i++)
+            {
+                double now = T0 + i / fps;
+                for (int k = 1; k <= 3; k++) { double tt = now - (3 - k) / (fps * 3); game.Script(tt - T0, tt); game.Step(1 / (fps * 3), tt); } // three physics steps a frame
+                var f = game.Frame(now);
+                using (var b = new Bitmap(800, 500))
+                using (var g = Graphics.FromImage(b))
+                {
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.DrawImage(f, new Rectangle(0, 0, 800, 500), new Rectangle(0, 0, w, h), GraphicsUnit.Pixel);
+                    b.Save(Path.Combine(dir, i.ToString("000") + ".png"), ImageFormat.Png);
+                }
+            }
+        }
+
+        // a sunset wallpaper, a browser window, a taskbar, and seven desktop icons, all drawn here
+        static Bitmap Staged(int w, int h, out Bitmap wall, out List<DIcon> icons)
+        {
+            float S = U.S;
+            wall = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(wall))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var lg = new LinearGradientBrush(new Rectangle(0, 0, w, h), Color.Black, Color.Black, 90f))
+                {
+                    lg.InterpolationColors = new ColorBlend { Colors = new[] { Color.FromArgb(18, 22, 58), Color.FromArgb(62, 42, 112), Color.FromArgb(178, 82, 120), Color.FromArgb(246, 150, 96), Color.FromArgb(252, 196, 120) }, Positions = new[] { 0f, 0.35f, 0.58f, 0.74f, 1f } };
+                    g.FillRectangle(lg, 0, 0, w, h);
+                }
+                U.Glow(g, Color.FromArgb(255, 220, 160), w * 0.62f, h * 0.7f, h * 0.32f, 0.85);               // the sun, low
+                using (var br = new SolidBrush(Color.FromArgb(255, 236, 200))) g.FillEllipse(br, w * 0.62f - h * 0.06f, h * 0.7f - h * 0.06f, h * 0.12f, h * 0.12f);
+                var rnd = new Random(4);
+                Color[] layers = { Color.FromArgb(120, 58, 100), Color.FromArgb(78, 38, 84), Color.FromArgb(40, 22, 54) };
+                for (int L = 0; L < 3; L++) // three ridges of mountains, darker as they come closer
+                {
+                    var pts = new List<PointF> { new PointF(0, h) }; float y0 = h * (0.66f + L * 0.08f);
+                    for (int x = 0; x <= w; x += w / 24) pts.Add(new PointF(x, y0 - (float)(rnd.NextDouble() * h * (0.12f - L * 0.025f) + Math.Sin(x * 0.004 + L) * h * 0.03)));
+                    pts.Add(new PointF(w, h));
+                    using (var br = new SolidBrush(layers[L])) g.FillPolygon(br, pts.ToArray());
+                }
+                using (var br = new SolidBrush(Color.White)) for (int i = 0; i < 160; i++) { br.Color = Color.FromArgb(rnd.Next(60, 200), 255, 255, 255); float x = (float)rnd.NextDouble() * w, y = (float)rnd.NextDouble() * h * 0.4f, s = (float)(rnd.NextDouble() * 2 + 1); g.FillEllipse(br, x, y, s, s); } // stars
+            }
+            var screen = new Bitmap(wall);
+            using (var g = Graphics.FromImage(screen))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                // a browser window
+                float wx = w * 0.3f, wy = h * 0.1f, ww = w * 0.52f, wh = h * 0.66f;
+                U.GlowR(g, Color.Black, new RectangleF(wx - 20 * S, wy + 10 * S, ww + 40 * S, wh + 40 * S), 0.55);
+                using (var p = U.Round(wx, wy, ww, wh, 10 * S)) using (var br = new SolidBrush(Color.FromArgb(250, 250, 252))) g.FillPath(br, p);
+                using (var p = U.Round(wx, wy, ww, 46 * S, 10 * S)) using (var br = new SolidBrush(Color.FromArgb(226, 229, 235))) g.FillPath(br, p);
+                using (var br = new SolidBrush(Color.FromArgb(226, 229, 235))) g.FillRectangle(br, wx, wy + 30 * S, ww, 16 * S);
+                using (var p = U.Round(wx + 14 * S, wy + 8 * S, 220 * S, 38 * S, 8 * S)) using (var br = new SolidBrush(Color.FromArgb(250, 250, 252))) g.FillPath(br, p);       // the tab
+                using (var br = new SolidBrush(Color.FromArgb(60, 64, 72))) g.DrawString("Obsidot · GitHub", U.F("Segoe UI", 12 * S), br, wx + 30 * S, wy + 17 * S);
+                using (var pen = new Pen(Color.FromArgb(90, 94, 102), 1.6f * S)) // window buttons
+                {
+                    float bx = wx + ww - 36 * S, by = wy + 22 * S;
+                    g.DrawLine(pen, bx - 6 * S, by - 6 * S, bx + 6 * S, by + 6 * S); g.DrawLine(pen, bx + 6 * S, by - 6 * S, bx - 6 * S, by + 6 * S);
+                    g.DrawRectangle(pen, bx - 54 * S, by - 6 * S, 12 * S, 12 * S); g.DrawLine(pen, bx - 104 * S, by, bx - 92 * S, by);
+                }
+                using (var p = U.Round(wx + 16 * S, wy + 56 * S, ww - 32 * S, 34 * S, 17 * S)) using (var br = new SolidBrush(Color.FromArgb(238, 240, 244))) g.FillPath(br, p);     // address bar
+                using (var br = new SolidBrush(Color.FromArgb(70, 74, 82))) g.DrawString("github.com/GalacticVraj/obsidot", U.F("Segoe UI", 12.5f * S), br, wx + 38 * S, wy + 62 * S);
+                using (var br = new SolidBrush(Color.FromArgb(22, 24, 28))) g.DrawString("A living dot-matrix clock", U.F("Segoe UI Variable Display Semib", 34 * S), br, wx + 48 * S, wy + 130 * S);
+                using (var br = new SolidBrush(Color.FromArgb(22, 24, 28))) g.DrawString("for your desktop.", U.F("Segoe UI Variable Display Semib", 34 * S), br, wx + 48 * S, wy + 176 * S);
+                using (var br = new SolidBrush(Color.FromArgb(214, 218, 226)))
+                    for (int i = 0; i < 7; i++) using (var p = U.Round(wx + 48 * S, wy + 260 * S + i * 26 * S, (ww * 0.5f) * (i % 3 == 2 ? 0.7f : 1), 11 * S, 5 * S)) g.FillPath(br, p);
+                using (var p = U.Round(wx + 48 * S, wy + 460 * S, 190 * S, 52 * S, 26 * S)) using (var br = new SolidBrush(Color.FromArgb(232, 36, 32))) g.FillPath(br, p);
+                using (var br = new SolidBrush(Color.White)) g.DrawString("Download", U.F("Segoe UI Semibold", 15 * S), br, wx + 92 * S, wy + 472 * S);
+                float cxx = wx + ww * 0.7f, cyy = wy + wh * 0.5f, cr = ww * 0.16f;  // a puck in the page
+                using (var br = new SolidBrush(Color.FromArgb(14, 14, 16))) g.FillEllipse(br, cxx - cr, cyy - cr, cr * 2, cr * 2);
+                using (var br = new SolidBrush(Color.FromArgb(240, 255, 255, 255))) for (int r = -2; r <= 2; r++) for (int q = -6; q <= 6; q++) if ((q + r) % 2 == 0) g.FillEllipse(br, cxx + q * cr * 0.12f - 3 * S, cyy + r * cr * 0.14f - 3 * S, 6 * S, 6 * S);
+                // a taskbar
+                using (var br = new SolidBrush(Color.FromArgb(235, 26, 28, 34))) g.FillRectangle(br, 0, h - 48 * S, w, 48 * S);
+                using (var br = new SolidBrush(Color.FromArgb(200, 230, 233, 240))) for (int i = -3; i <= 3; i++) using (var p = U.Round(w / 2f + i * 46 * S - 16 * S, h - 40 * S, 32 * S, 32 * S, 7 * S)) g.FillPath(br, p);
+                using (var br = new SolidBrush(Color.FromArgb(230, 240, 240, 244))) g.DrawString("9:41", U.F("Segoe UI", 12 * S), br, w - 70 * S, h - 34 * S);
+            }
+            // seven desktop icons down the left edge
+            icons = new List<DIcon>();
+            string[] names = { "Projects", "Holiday.jpg", "Resume.pdf", "Notes.txt", "Music", "Game", "Recycle Bin" };
+            int[] kinds = { Desk.KFolder, Desk.KImage, Desk.KPaper, Desk.KPaper, Desk.KFolder, Desk.KFile, Desk.KBin };
+            float isz = 48 * S;
+            for (int i = 0; i < names.Length; i++)
+            {
+                float x = 30 * S, y = 24 * S + i * 108 * S;
+                var img = new Bitmap((int)isz, (int)isz, PixelFormat.Format32bppPArgb);
+                using (var g = Graphics.FromImage(img)) { g.SmoothingMode = SmoothingMode.AntiAlias; Icon(g, i, isz); }
+                icons.Add(new DIcon { Name = names[i], Kind = kinds[i], Img = img, Icon = new RectangleF(x, y, isz, isz), Label = new RectangleF(x - 14 * S, y + isz + 4 * S, isz + 28 * S, 20 * S) });
+            }
+            return screen;
+        }
+
+        static void Icon(Graphics g, int i, float s)
+        {
+            float u = s / 48f;
+            Func<float, float, float, float, float, GraphicsPath> rr = (x, y, ww, hh, r) => U.Round(x * u, y * u, ww * u, hh * u, r * u);
+            switch (i)
+            {
+                case 0: case 4: // folders
+                    using (var p = rr(4, 10, 22, 10, 3)) using (var br = new SolidBrush(Color.FromArgb(226, 166, 44))) g.FillPath(br, p);
+                    using (var p = rr(4, 14, 40, 28, 4)) using (var br = new LinearGradientBrush(new RectangleF(0, 14 * u, s, 28 * u), Color.FromArgb(255, 214, 102), Color.FromArgb(240, 178, 52), 90f)) g.FillPath(br, p);
+                    if (i == 4) using (var br = new SolidBrush(Color.FromArgb(150, 90, 40, 0))) { g.FillEllipse(br, 18 * u, 30 * u, 7 * u, 6 * u); g.FillRectangle(br, 23 * u, 21 * u, 2 * u, 12 * u); }
+                    break;
+                case 1: // a photo
+                    using (var p = rr(5, 8, 38, 32, 3)) using (var br = new SolidBrush(Color.White)) g.FillPath(br, p);
+                    using (var br = new LinearGradientBrush(new RectangleF(0, 11 * u, s, 26 * u), Color.FromArgb(90, 160, 240), Color.FromArgb(250, 190, 130), 90f)) g.FillRectangle(br, 8 * u, 11 * u, 32 * u, 26 * u);
+                    using (var br = new SolidBrush(Color.FromArgb(255, 240, 180))) g.FillEllipse(br, 28 * u, 14 * u, 7 * u, 7 * u);
+                    using (var br = new SolidBrush(Color.FromArgb(60, 110, 80))) g.FillPolygon(br, new[] { new PointF(8 * u, 37 * u), new PointF(18 * u, 22 * u), new PointF(26 * u, 31 * u), new PointF(31 * u, 26 * u), new PointF(40 * u, 37 * u) });
+                    break;
+                case 2: case 3: // a PDF, a text file
+                    using (var br = new SolidBrush(Color.White)) g.FillPolygon(br, new[] { new PointF(10 * u, 4 * u), new PointF(31 * u, 4 * u), new PointF(39 * u, 12 * u), new PointF(39 * u, 44 * u), new PointF(10 * u, 44 * u) });
+                    using (var br = new SolidBrush(Color.FromArgb(214, 218, 226))) { g.FillPolygon(br, new[] { new PointF(31 * u, 4 * u), new PointF(39 * u, 12 * u), new PointF(31 * u, 12 * u) }); for (int k = 0; k < 4; k++) g.FillRectangle(br, 14 * u, (18 + k * 6) * u, 20 * u, 2 * u); }
+                    if (i == 2) { using (var br = new SolidBrush(Color.FromArgb(214, 40, 34))) g.FillRectangle(br, 6 * u, 30 * u, 24 * u, 11 * u); using (var br = new SolidBrush(Color.White)) g.DrawString("PDF", U.F("Segoe UI Semibold", 7.5f * u), br, 8 * u, 30.5f * u); }
+                    break;
+                case 5: // a game
+                    using (var p = rr(6, 6, 36, 36, 9)) using (var br = new LinearGradientBrush(new RectangleF(0, 0, s, s), Color.FromArgb(120, 80, 240), Color.FromArgb(240, 70, 110), 45f)) g.FillPath(br, p);
+                    using (var br = new SolidBrush(Color.White)) g.FillPolygon(br, new[] { new PointF(20 * u, 16 * u), new PointF(33 * u, 24 * u), new PointF(20 * u, 32 * u) });
+                    break;
+                case 6: // the Recycle Bin
+                    using (var br = new SolidBrush(Color.FromArgb(200, 214, 226, 240))) g.FillPolygon(br, new[] { new PointF(12 * u, 12 * u), new PointF(36 * u, 12 * u), new PointF(33 * u, 44 * u), new PointF(15 * u, 44 * u) });
+                    using (var pen = new Pen(Color.FromArgb(150, 120, 140, 170), 1.4f * u)) { for (int k = 0; k < 3; k++) g.DrawLine(pen, (18 + k * 6) * u, 16 * u, (19 + k * 5) * u, 40 * u); }
+                    using (var br = new SolidBrush(Color.FromArgb(230, 230, 236, 244))) g.FillRectangle(br, 10 * u, 8 * u, 28 * u, 4 * u);
+                    break;
+            }
+        }
         static Bitmap SurfaceOf(LayeredForm f) { return (Bitmap)typeof(LayeredForm).GetField("Surface", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(f); }
     }
 }

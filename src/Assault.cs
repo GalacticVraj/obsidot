@@ -51,7 +51,10 @@ namespace Obsidot
         static readonly string[] WName = { "PIXEL BLASTER", "LASER ARC", "CRYSTAL RAILCANNON", "BLACK HOLE" };
         double holeT0 = -1, holeTick, collapseT = -10; PointF holeP, collapseP; // weapon 4: a singularity that follows the cursor
 
-        public Assault(Crystal cr, PointF emitter)
+        public Assault(Crystal cr, PointF emitter) : this(cr, emitter, null, null, null) { }
+
+        // stagedScreen / stagedWall / stagedIcons: a made-up desktop for the README demo instead of your real screen
+        public Assault(Crystal cr, PointF emitter, Bitmap stagedScreen, Bitmap stagedWall, List<DIcon> stagedIcons)
         {
             this.cr = cr;
             scr = Screen.PrimaryScreen.Bounds;
@@ -59,10 +62,16 @@ namespace Obsidot
             TopMost = true; ShowInTaskbar = false; KeyPreview = true; BackColor = Color.Black; Text = "Obsidot";
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.Opaque, true);
             snap = new Bitmap(scr.Width, scr.Height, PixelFormat.Format32bppPArgb);
-            using (var g = Graphics.FromImage(snap)) g.CopyFromScreen(scr.Location, Point.Empty, scr.Size);
-            // only icons you can actually see become targets; everything else on screen is glass
-            icons = Desk.Read(scr);
-            icons.RemoveAll(d => !Desk.OnDesktop(new Point((int)(d.Icon.X + d.Icon.Width / 2), (int)(d.Icon.Y + d.Icon.Height / 2))));
+            using (var g = Graphics.FromImage(snap))
+                if (stagedScreen != null) g.DrawImage(stagedScreen, new Rectangle(0, 0, scr.Width, scr.Height)); else g.CopyFromScreen(scr.Location, Point.Empty, scr.Size);
+            stagedWallpaper = stagedWall;
+            if (stagedIcons != null) icons = stagedIcons;
+            else
+            {
+                // only icons you can actually see become targets; everything else on screen is glass
+                icons = Desk.Read(scr);
+                icons.RemoveAll(d => !Desk.OnDesktop(new Point((int)(d.Icon.X + d.Icon.Width / 2), (int)(d.Icon.Y + d.Icon.Height / 2))));
+            }
             E = new PointF(emitter.X - scr.X, emitter.Y - scr.Y);
             E.X = (float)U.Clamp(E.X, 60 * S, scr.Width - 60 * S); E.Y = (float)U.Clamp(E.Y, 60 * S, scr.Height - 60 * S);
             M = new PointF(scr.Width / 2f, scr.Height / 2f);
@@ -80,14 +89,14 @@ namespace Obsidot
             BeginInvoke(new Action(LoadWorld));
         }
 
-        List<DIcon> icons;
+        List<DIcon> icons; Bitmap stagedWallpaper;
         Bitmap under;                 // the clean desktop, revealed through holes you shoot in the screen
         float cell; PointF[,] gv; int[,] hp; int gcols, grows;
 
         public void LoadWorld()
         {
             int w = scr.Width, h = scr.Height;
-            under = Desk.Wallpaper(scr.Size) ?? new Bitmap(snap);
+            under = stagedWallpaper != null ? new Bitmap(stagedWallpaper, scr.Size) : (Desk.Wallpaper(scr.Size) ?? new Bitmap(snap));
             BuildWorld(under, 150, 22);
             world = U.Dib(w, h, out worldDC, out worldH); // DIB-backed: GDI+ scars it, GDI blits it
             using (var g = Graphics.FromImage(world))
@@ -286,6 +295,50 @@ namespace Obsidot
             weapon = 1; fireDown = true; M = targets.Count > 0 ? targets[0].C : new PointF(scr.Width * 0.3f, scr.Height * 0.4f); hitStop = 0; revealT0 = U.Now - 5;
         }
 
+        // ---- the README demo: a scripted run through every weapon on a staged desktop ----
+        public bool Scripted;
+        public void Begin(double now) { Scripted = true; revealT0 = t0 = last = now; }
+        static PointF Lerp(PointF a, PointF b, double k) { k = U.Clamp01(k); k = k * k * (3 - 2 * k); return new PointF((float)(a.X + (b.X - a.X) * k), (float)(a.Y + (b.Y - a.Y) * k)); }
+        PointF At(float fx, float fy) { return new PointF(scr.Width * fx, scr.Height * fy); }
+        public void Script(double t, double now)
+        {
+            Func<int, PointF> ic = i => i < targets.Count ? targets[i].C : At(0.1f, 0.2f);
+            if (t < 0.7) { M = Lerp(At(0.5f, 0.5f), At(0.47f, 0.33f), t / 0.7); return; }
+            if (t < 2.3)       // Pixel Blaster across the window glass, then into a folder
+            {
+                if (weapon != 0) SetWeapon(0);
+                fireDown = true;
+                M = t < 1.6 ? Lerp(At(0.47f, 0.33f), At(0.66f, 0.52f), (t - 0.7) / 0.9) : Lerp(At(0.66f, 0.52f), ic(0), (t - 1.6) / 0.35);
+                return;
+            }
+            if (t < 2.5) { fireDown = false; M = Lerp(ic(0), ic(1), (t - 2.3) / 0.2); return; }
+            if (t < 4.0)       // Laser Arc down the column of icons
+            {
+                if (weapon != 1) SetWeapon(1);
+                fireDown = true;
+                double k = (t - 2.5) / 1.5; int a = Math.Min(3, 1 + (int)(k * 3)); M = Lerp(ic(a), ic(Math.Min(a + 1, 4)), (k * 3) % 1 * 0.35);
+                return;
+            }
+            if (t < 4.2) { fireDown = false; M = Lerp(M, ic(6), (t - 4.0) / 0.2); return; }
+            if (t < 5.1)       // Crystal Railcannon: charge, then one beam through the screen
+            {
+                if (weapon != 2) SetWeapon(2);
+                if (chargeT0 < 0 && t < 4.95) { chargeT0 = now; fireDown = true; }
+                M = ic(6);                                         // straight at the Recycle Bin
+                if (t >= 4.95 && chargeT0 >= 0) { fireDown = false; FireRail(now); }
+                return;
+            }
+            if (t < 7.6)       // the Black Hole: drag it across the window, then let go
+            {
+                if (weapon != 3) SetWeapon(3);
+                if (holeT0 < 0 && t < 7.4) { holeT0 = holeTick = now; holeP = M; fireDown = true; }
+                M = t < 6.0 ? Lerp(ic(6), ic(4), (t - 5.1) / 0.9) : Lerp(ic(4), At(0.58f, 0.42f), (t - 6.0) / 1.2); // up past the last icons, into the window
+                if (t >= 7.4 && holeT0 >= 0) { fireDown = false; Collapse(now); }
+                return;
+            }
+            fireDown = false; M = Lerp(At(0.58f, 0.42f), At(0.62f, 0.38f), (t - 7.6) / 1.5);
+        }
+
         public void DemoHole(double t) { weapon = 3; fireDown = false; holeT0 = t - 1.3; holeP = M = new PointF(scr.Width * 0.45f, scr.Height * 0.45f); }
 
         // ---------------- loop ----------------
@@ -325,7 +378,7 @@ namespace Obsidot
             slot.T = weapon; slot.Step(dt);
             for (int i = later.Count - 1; i >= 0; i--) if (now >= later[i].Key) { var a = later[i].Value; later.RemoveAt(i); a(); }
 
-            if (fireDown && (Control.MouseButtons & MouseButtons.Left) == 0) // a missed mouse-up must never leave a weapon firing
+            if (fireDown && !Scripted && (Control.MouseButtons & MouseButtons.Left) == 0) // a missed mouse-up must never leave a weapon firing
             {
                 fireDown = false; if (weapon == 2 && chargeT0 >= 0) FireRail(now); if (weapon == 3 && holeT0 >= 0) Collapse(now);
             }

@@ -26,6 +26,7 @@ namespace Obsidot
             AppDomain.CurrentDomain.UnhandledException += (s, e) => Settings.Log(e.ExceptionObject);
             Settings.Load();
             if (args.Length > 0 && args[0] == "--shots") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Run(args.Length > 1 ? args[1] : "."); return; }
+            if (args.Length > 0 && args[0] == "--assault") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.AssaultDemo(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--anim") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Anim(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 1 && args[0] == "--bench") { Settings.NoSave = true; Snd.Init(); Crystal.BenchLog = args[1]; Application.Run(new Crystal()); return; }
             bool fresh;
