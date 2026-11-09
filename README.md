@@ -23,11 +23,11 @@
 
 <p>Press <kbd>Alt</kbd> + <kbd>K</kbd> on <b>any</b> screen (Chrome, a PDF, your desktop) and it freezes into glass.<br>Crack it. Shatter it. Pull it into a black hole. Press <kbd>Esc</kbd>, and everything is exactly as it was.</p>
 
-<img src="docs/media/assault.gif" width="720" alt="Desktop Assault on a real desktop: a browser window shatters like glass and a black hole swallows the pieces">
+<img src="docs/media/assault.gif" width="720" alt="Desktop Assault on a real Windows desktop: the screen shatters like glass and a black hole swallows the pieces">
 
 <p><kbd>1</kbd> <b>Pixel Blaster</b> &nbsp;&nbsp; <kbd>2</kbd> <b>Laser Arc</b> &nbsp;&nbsp; <kbd>3</kbd> <b>Crystal Railcannon</b> &nbsp;&nbsp; <kbd>4</kbd> <b>Black Hole</b><br>📁 folders break into chunks &nbsp;·&nbsp; 🖼️ photos burst into pixels &nbsp;·&nbsp; 📄 documents flutter apart &nbsp;·&nbsp; 🗑️ the Recycle Bin detonates</p>
 
-<p><sub><b>Nothing on disk is ever touched.</b> It plays on a snapshot of your screen. Filmed on a real desktop: its wallpaper, its icons, one browser window.</sub></p>
+<p><sub><b>Nothing on disk is ever touched.</b> It plays on a snapshot of your screen. Filmed on a real Windows desktop, exactly as it plays when you press Alt + K.</sub></p>
 
 <br><br>
 
@@ -161,7 +161,7 @@ About 4,500 lines of C# 5, WinForms and GDI+, no dependencies.
 - **Desktop Assault** keeps its own 32-bit DIB back buffer and a jittered glass lattice that cracks and shatters pane by pane, and reads the real icon positions from Explorer's list view.
 - **Idle-aware:** 4 Hz at rest, 60 fps only while something moves, almost nothing while covered.
 
-`Obsidot.exe --shots <folder>` renders the main states to PNG. `--anim` and `--assault` render the frames behind the animations on this page; `--assault <dir> real` films it on your own wallpaper and icons (open windows are never captured).
+`Obsidot.exe --shots <folder>` renders the main states to PNG. `--anim` and `--assault` render the frames behind the animations on this page; `--assault <dir> screen` waits for <kbd>F9</kbd>, then films it on a real screenshot of your desktop.
 </details>
 
 <br>

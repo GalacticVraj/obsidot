@@ -175,15 +175,21 @@ namespace Obsidot
             c.card.Shot(1.6, 2, true).Save(Path.Combine(dir, "thought-card.png"), ImageFormat.Png);
             using (var ro = new Roamer(c.pet, "NEW FILE", "PROJECT-NOTES.PDF", null, 25)) ro.Render(U.Now + 1).Save(Path.Combine(dir, "pet-sign.png"), ImageFormat.Png);
         }
-        // `Obsidot.exe --assault <dir> [real]`: Desktop Assault, every weapon, as frames;
-        // on a made-up desktop, or with `real` on a snapshot of your actual screen and icons
-        public static void AssaultDemo(string dir, bool real, string window)
+        // `Obsidot.exe --assault <dir> [real|screen]`: Desktop Assault, every weapon, as frames;
+        // on a made-up desktop, with `real` on your wallpaper and icons redrawn, with `screen` on a real screenshot
+        public static void AssaultDemo(string dir, string mode, string window)
         {
+            bool real = mode == "real" || mode == "screen";
             Directory.CreateDirectory(dir);
             var c = new Crystal(); float S = U.S;
             var scr = System.Windows.Forms.Screen.PrimaryScreen.Bounds; int w = scr.Width, h = scr.Height;
             Bitmap wall = null, screen = null; List<DIcon> icons = null;
             if (!real) screen = Staged(w, h, out wall, out icons);
+            else if (mode == "screen")       // you set the screen up, press F9, and the Assault takes its own screenshot, exactly as with Alt+K
+            {
+                while ((GetAsyncKeyState(0x78) & 0x8000) == 0) System.Threading.Thread.Sleep(30);
+                System.Threading.Thread.Sleep(400);
+            }
             else       // your wallpaper and your desktop icons, redrawn: open windows never get in the shot
             {
                 icons = Desk.Read(scr); wall = Desk.Wallpaper(scr.Size) ?? new Bitmap(w, h);
@@ -215,7 +221,7 @@ namespace Obsidot
                 }
                 File.WriteAllLines(Path.Combine(dir, "_icons.txt"), icons.ConvertAll(d => d.Name).ToArray());
             }
-            screen.Save(Path.Combine(dir, "_staged.png"), ImageFormat.Png);
+            if (screen != null) screen.Save(Path.Combine(dir, "_staged.png"), ImageFormat.Png);
             var game = new Assault(c, new PointF(w * 0.7f, h * 0.3f), screen, wall, icons);
             game.LoadWorld();
             double fps = 15, T0 = U.Now + 3000; game.Begin(T0);
@@ -235,6 +241,8 @@ namespace Obsidot
                 }
             }
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")] static extern short GetAsyncKeyState(int vk);
 
         // a night-sky wallpaper, a dark code editor, a taskbar and seven desktop icons, all drawn here
         static Bitmap Staged(int w, int h, out Bitmap wall, out List<DIcon> icons)
