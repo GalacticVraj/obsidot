@@ -27,7 +27,7 @@ namespace Obsidot
             Settings.Load();
             if (args.Length > 0 && args[0] == "--shots") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Run(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--assault") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.AssaultDemo(args.Length > 1 ? args[1] : ".", args.Length > 2 ? args[2] : "", args.Length > 3 ? args[3] : null); return; }
-            if (args.Length > 0 && args[0] == "--anim") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Anim(args.Length > 1 ? args[1] : "."); return; }
+            if (args.Length > 0 && args[0] == "--anim") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Anim(args.Length > 1 ? args[1] : ".", args.Length > 2 && args[2] == "full"); return; }
             if (args.Length > 1 && args[0] == "--bench") { Settings.NoSave = true; Snd.Init(); Crystal.BenchLog = args[1]; Application.Run(new Crystal()); return; }
             bool fresh;
             using (var mx = new Mutex(true, "OBSIDOT.living.puck", out fresh))
@@ -238,19 +238,22 @@ namespace Obsidot
         public static void Load()
         {
             Migrate();
-            try
+            string[] lines;
+            try { lines = File.ReadAllLines(File_); } catch { return; }
+            foreach (var line in lines)
             {
-                foreach (var line in File.ReadAllLines(File_))
+                try
                 {
                     int i = line.IndexOf('='); if (i < 0) continue;
                     string k = line.Substring(0, i), v = line.Substring(i + 1);
                     var inv = System.Globalization.CultureInfo.InvariantCulture;
                     if (k == "x") X = double.Parse(v, inv); else if (k == "y") Y = double.Parse(v, inv);
                     else if (k == "sound") Sound = v == "1"; else if (k == "auto") Auto = v == "1"; else if (k == "pin") Float = v == "0";
-                    else if (k == "best") Best = int.Parse(v); else if (k == "cards") Seen = v; else if (k == "focus") Focus = int.Parse(v); else if (k == "name") Name = v; else if (k == "asked") Asked = v == "1"; 
+                    else if (k == "best") Best = int.Parse(v); else if (k == "cards") Seen = v; else if (k == "focus") Focus = int.Parse(v); else if (k == "name") Name = v; else if (k == "asked") Asked = v == "1";
                 }
+                catch { } // a damaged line keeps its default; the others still load
             }
-            catch { }
+            Focus = Math.Max(1, Math.Min(60, Focus));
         }
 
         public static void Log(object e)
@@ -265,8 +268,10 @@ namespace Obsidot
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(File_));
                 var inv = System.Globalization.CultureInfo.InvariantCulture;
-                File.WriteAllText(File_, "x=" + X.ToString(inv) + "\ny=" + Y.ToString(inv) + "\nsound=" + (Sound ? 1 : 0) + "\nauto=" + (Auto ? 1 : 0) +
+                string tmp = File_ + ".tmp"; // write aside, then swap: a power cut mid-write never empties the settings
+                File.WriteAllText(tmp, "x=" + X.ToString(inv) + "\ny=" + Y.ToString(inv) + "\nsound=" + (Sound ? 1 : 0) + "\nauto=" + (Auto ? 1 : 0) +
                     "\npin=" + (Float ? 0 : 1) + "\nbest=" + Best + "\ncards=" + Seen + "\nfocus=" + Focus + "\nname=" + Name + "\nasked=" + (Asked ? 1 : 0) + "\n");
+                if (File.Exists(File_)) File.Replace(tmp, File_, null); else File.Move(tmp, File_);
             }
             catch { }
         }
@@ -379,6 +384,7 @@ namespace Obsidot
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern IntPtr FindWindow(string cls, string name);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string cls, string name);
         [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+        [DllImport("user32.dll")] public static extern IntPtr SendMessageTimeout(IntPtr h, int msg, IntPtr w, IntPtr l, int flags, int timeoutMs, out IntPtr result);
         [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr h, out uint pid);
         [DllImport("user32.dll")] public static extern bool ClientToScreen(IntPtr h, ref POINT p);
         [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);

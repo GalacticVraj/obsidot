@@ -32,10 +32,11 @@ namespace Obsidot
             box = new TextBox
             {
                 Multiline = true, BorderStyle = BorderStyle.None, BackColor = Bg, ForeColor = Theme.Mix(Theme.T.Ink, Theme.T.Mid, 0.08),
-                Font = new Font("Segoe UI Variable Text", 11.5f), AcceptsTab = true, WordWrap = true, ScrollBars = ScrollBars.None,
+                Font = BoxFont, AcceptsTab = true, WordWrap = true, ScrollBars = ScrollBars.None,
                 Bounds = new Rectangle(Pad, Head, Width - Pad * 2, Height - Head - Foot)
             };
-            try { box.Text = demo ?? (File.Exists(File_) ? File.ReadAllText(File_) : ""); } catch { }
+            try { box.Text = demo ?? (File.Exists(File_) ? File.ReadAllText(File_) : ""); }
+            catch (Exception ex) { Settings.Log(ex); readFailed = true; } // locked by a sync tool? then never save over the notes
             box.TextChanged += delegate { dirty = true; saveT.Stop(); saveT.Start(); Invalidate(new Rectangle(0, Height - Foot, Width, Foot)); };
             box.KeyDown += (s, e) => { if (e.Control && e.KeyCode == Keys.A) { box.SelectAll(); e.SuppressKeyPress = true; } }; // TextBox lacks Ctrl+A when multiline
             Controls.Add(box);
@@ -72,9 +73,18 @@ namespace Obsidot
             if (k >= 1) anim.Stop();
         }
 
+        static readonly Font BoxFont = new Font("Segoe UI Variable Text", 11.5f);
+        bool readFailed;
+
         void Save()
         {
             if (!dirty) return;
+            if (readFailed) // keep what was typed, beside the notes, instead of replacing them
+            {
+                try { File.WriteAllText(Path.Combine(Path.GetDirectoryName(File_), "scratchpad.recovered.txt"), box.Text); dirty = false; }
+                catch (Exception ex) { Settings.Log(ex); }
+                return;
+            }
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(File_));

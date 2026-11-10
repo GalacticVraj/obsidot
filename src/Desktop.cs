@@ -35,9 +35,12 @@ namespace Obsidot
             IntPtr hp = N.OpenProcess(0x0008 | 0x0010 | 0x0020 | 0x0400, false, pid);
             if (hp == IntPtr.Zero) return list;
             IntPtr mem = N.VirtualAllocEx(hp, IntPtr.Zero, (IntPtr)4096, 0x3000, 0x04);
+            if (mem == IntPtr.Zero) { N.CloseHandle(hp); return list; }
             try
             {
-                int n = (int)N.SendMessage(lv, 0x1004, IntPtr.Zero, IntPtr.Zero); // LVM_GETITEMCOUNT
+                IntPtr cnt;   // LVM_GETITEMCOUNT; a hung Explorer gives up after 300 ms instead of freezing Obsidot
+                if (N.SendMessageTimeout(lv, 0x1004, IntPtr.Zero, IntPtr.Zero, 0x0002, 300, out cnt) == IntPtr.Zero) return list;
+                int n = (int)cnt;
                 var buf = new byte[512]; IntPtr io;
                 for (int i = 0; i < n && i < 400; i++)
                 {

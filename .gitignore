@@ -2,3 +2,4 @@
 *.exe
 release/
 *.pdb
+store/.tools/

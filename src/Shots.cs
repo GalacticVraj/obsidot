@@ -90,7 +90,7 @@ namespace Obsidot
         }
 
         // `Obsidot.exe --anim <dir>`: transparent frame sequences for the README's animated demos (made into APNGs by a script)
-        public static void Anim(string dir)
+        public static void Anim(string dir, bool full = false) // full: native pixels (Store screenshots), not README-sized
         {
             var c = new Crystal(); int W = c.W; float C = W / 2f, S = U.S;
             c.birth0 = U.Now - 100; c.Greet("x", U.Now - 100); c.pet.Shot(0, U.Now);
@@ -105,11 +105,12 @@ namespace Obsidot
                     double t = t0 + i / fps;
                     each(i, t);
                     c.Step(1 / fps, t); c.Render(t);
-                    using (var b = new Bitmap(outPx, outPx, PixelFormat.Format32bppArgb))
+                    int px = full ? sd : outPx;
+                    using (var b = new Bitmap(px, px, PixelFormat.Format32bppArgb))
                     using (var g = Graphics.FromImage(b))
                     {
                         g.Clear(Color.Transparent); g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.PixelOffsetMode = PixelOffsetMode.HighQuality; g.CompositingQuality = CompositingQuality.HighQuality;
-                        g.DrawImage(SurfaceOf(c), new Rectangle(0, 0, outPx, outPx), new Rectangle((int)(C - sd / 2), (int)(C - sd / 2), sd, sd), GraphicsUnit.Pixel);
+                        g.DrawImage(SurfaceOf(c), new Rectangle(0, 0, px, px), new Rectangle((int)(C - sd / 2), (int)(C - sd / 2), sd, sd), GraphicsUnit.Pixel);
                         b.Save(Path.Combine(d, i.ToString("000") + ".png"), ImageFormat.Png);
                     }
                 }
@@ -227,6 +228,7 @@ namespace Obsidot
             double fps = 15, T0 = U.Now + 3000; game.Begin(T0);
             var cam = real ? new Rectangle(0, 0, w, h) : new Rectangle(0, (int)(h * 0.11f), (int)(w * 0.78f), (int)(w * 0.78f / 1.6f));   // framed on the action, 16:10
             int ow = 800, oh = real ? (int)Math.Round(800.0 * h / w) : 500;
+            if (mode == "full") { ow = cam.Width; oh = cam.Height; }   // native pixels, for Store screenshots
             for (int i = 0; i < 135; i++)
             {
                 double now = T0 + i / fps;

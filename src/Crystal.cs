@@ -520,6 +520,7 @@ namespace Obsidot
                 downloads = new System.IO.FileSystemWatcher(dir) { IncludeSubdirectories = false, NotifyFilter = System.IO.NotifyFilters.FileName, SynchronizingObject = this };
                 downloads.Created += (s, e) => Downloaded(e.FullPath);
                 downloads.Renamed += (s, e) => Downloaded(e.FullPath);
+                downloads.Error += (s, e) => { var w = downloads; downloads = null; if (w != null) w.Dispose(); WatchDownloads(); };
                 downloads.EnableRaisingEvents = true;
             }
             catch (Exception ex) { Settings.Log(ex); }
@@ -530,6 +531,7 @@ namespace Obsidot
             string name = System.IO.Path.GetFileName(path), ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
             if (name.StartsWith(".") || name.StartsWith("~") || ext == ".crdownload" || ext == ".part" || ext == ".partial" || ext == ".tmp" || ext == ".download" || ext == ".opdownload") return;
             double t; if (seenFiles.TryGetValue(path, out t) && U.Now - t < 30) return;
+            if (seenFiles.Count > 64) seenFiles.Clear();
             seenFiles[path] = U.Now;
             var check = new Timer { Interval = 2000 };                     // give it two seconds to settle, then make sure it is really there
             check.Tick += delegate
@@ -587,6 +589,7 @@ namespace Obsidot
         public void Summon()
         {
             if (game != null) { game.Exit(); return; }
+            if (!Visible) Show();
             Contain(false);
             SetFloat(Settings.Float);
             birth0 = U.Now + 0.05; birthSound = false; Wake();
@@ -599,14 +602,23 @@ namespace Obsidot
             if (roamer != null) roamer.Close();
             pet.Asleep = false; pet.Scared = false;
             N.DwmFlush(); N.DwmFlush(); // let the compositor drop the crystal before the screen is frozen
-            game = new Assault(this, new PointF((float)cx, (float)cy));
-            game.FormClosed += delegate
+            try
             {
-                game.Dispose(); game = null;
+                game = new Assault(this, new PointF((float)cx, (float)cy));
+                game.FormClosed += delegate
+                {
+                    game.Dispose(); game = null;
+                    Show(); birth0 = U.Now + 0.05; birthSound = false; Wake();
+                    U.ClearGlows(); GC.Collect();
+                };
+                game.Show();
+            }
+            catch (Exception ex) // the screen couldn't be captured (locked or minimised remote session, low memory)
+            {
+                Settings.Log(ex);
+                if (game != null) { try { game.Dispose(); } catch { } game = null; }
                 Show(); birth0 = U.Now + 0.05; birthSound = false; Wake();
-                U.ClearGlows(); GC.Collect();
-            };
-            game.Show();
+            }
         }
 
         // ---------------- input ----------------

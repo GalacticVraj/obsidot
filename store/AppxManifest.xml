@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Obsidot as an MSIX package for the Microsoft Store. pack.ps1 fills in the $TOKENS$. -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop rescap">
+
+  <Identity Name="$NAME$" Publisher="$PUBLISHER$" Version="$VERSION$" ProcessorArchitecture="neutral" />
+
+  <Properties>
+    <DisplayName>Obsidot</DisplayName>
+    <PublisherDisplayName>$PUBLISHERNAME$</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>A living dot-matrix clock for your Windows desktop.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="Obsidot" Executable="Obsidot.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="Obsidot" Description="A living dot-matrix clock for your Windows desktop."
+        BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <!-- Start with Windows: on by default, switchable in Settings > Apps > Startup -->
+        <desktop:Extension Category="windows.startupTask" Executable="Obsidot.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="ObsidotStartup" Enabled="true" DisplayName="Obsidot" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>
