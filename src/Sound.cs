@@ -55,7 +55,14 @@ namespace Obsidot
             b = B(.6); Chirp(b, 900, 1300, .07, .1, 0, false); Chirp(b, 1200, 1750, .07, .1, .1, false); Chirp(b, 1500, 2400, .12, .11, .2, false); Glass(b, 2637, .04, 6, .3); Add("yay", b);   // the pet celebrates
             b = B(.55); Buzz(b, .2, 0, .22); Chirp(b, 240, 150, .3, .18, 0, true); LP(b, .25); Add("grr", b);                                  // the pet grumbles
             b = B(.35); Chirp(b, 520, 780, .05, .08, 0, false); Chirp(b, 780, 1170, .07, .09, .08, false); Add("plug", b);                     // power connected
-            b = B(.6); Chirp(b, 760, 420, .45, .07, 0, false); LP(b, .4); Add("sigh", b);                                                     // the pet is a little sad       // the focus timer ends
+            b = B(.6); Chirp(b, 760, 420, .45, .07, 0, false); LP(b, .4); Add("sigh", b);
+            b = B(.9); Glass(b, 783.99, .1, 4, 0); Glass(b, 1046.5, .1, 3.5, .13); Glass(b, 1567.98, .06, 3.5, .26); Add("start", b);          // a focus session begins
+            b = B(.5); Sine(b, 1568, .09, 30, 0); Sine(b, 1568, .09, 30, .17); Add("alert", b);                                              // two short beeps: nearly there
+            b = B(1.0); Sine(b, 880, .11, 9, 0); Sine(b, 659.25, .11, 9, .2); Sine(b, 523.25, .12, 6, .4); Add("lowbat", b);               // falling three-tone: battery low
+            b = B(1.3); Glass(b, 1046.5, .07, 4, 0); Glass(b, 1318.5, .07, 4, .1); Glass(b, 1568, .07, 4, .2); Glass(b, 2093, .07, 3, .3); Add("full", b); // rising sparkle: battery full
+            b = B(2.0); Glass(b, 1318.5, .1, 1.6, 0); Glass(b, 2637, .03, 2.2, 0); Glass(b, 1975.5, .05, 1.8, .02); Add("bell", b);            // a soft bell: take a break
+            b = B(1.0); Chirp(b, 620, 260, .8, .09, 0, false); LP(b, .3); Add("yawn", b);                                                    // a sleepy glide down
+            b = B(.25); Chirp(b, 380, 1300, .06, .14, 0, false); Noise(b, .08, 80, .6, 0, .02); Add("pop", b);                                // the tab is gone                                                     // the pet is a little sad       // the focus timer ends
         }
 
         // One persistent output stream + a tiny software mixer on its own thread.

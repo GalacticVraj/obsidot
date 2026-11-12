@@ -22,7 +22,9 @@ namespace Obsidot
         float x, y, vy, ground; bool falling = true; double t0, last, landT = -10, leaveT = -1;
         IntPtr perch, target; N.RECT perchRect;
         bool flying; double flyT0, flyDur; float fx0, fy0, fx1, fy1; IntPtr flyPerch; N.RECT flyRect;
-        Rectangle homeWa;
+        Rectangle homeWa; float homeX = float.NaN, homeY; IntPtr homePerch; N.RECT homeRect;
+        bool pressed, dragging; Point pressAt; float grabX, grabY; int lastTick = -1;
+        public Action<Point> Moved;        // dropped somewhere new
 
         public bool Stay;                  // the focus buddy: stays out until released
         public Func<string> Idle;          // its little chip while it has nothing to say
@@ -49,7 +51,11 @@ namespace Obsidot
             r.homeWa = workingArea; r.perch = IntPtr.Zero; r.ground = workingArea.Bottom; r.x = r.HomeX; r.y = r.ground - 320 * r.S;
             return r;
         }
-        float HomeX { get { return homeWa.Right - 330 * S; } }
+        float HomeX { get { return float.IsNaN(homeX) ? homeWa.Right - 330 * S : homeX; } }
+        float HomeY { get { return float.IsNaN(homeX) ? homeWa.Bottom : homeY; } }
+
+        // a spot you dragged it to before (on the taskbar, or on a window's title bar)
+        public void HomeAt(Point p) { x = homeX = p.X; homeY = ground = GroundAt(p.X, p.Y, out homePerch, out homeRect); perch = homePerch; perchRect = homeRect; y = ground - 320 * S; }
 
         // the title bar of the window you're using, left of its buttons; otherwise the top of the taskbar
         void FindPerch()
@@ -80,7 +86,7 @@ namespace Obsidot
         {
             bool away = target != IntPtr.Zero;
             line1 = null; line2 = null; click = dismiss = null; autoAt = -1; target = IntPtr.Zero;
-            if (!Stay) GoHome(); else if (away) Fly(HomeX, homeWa.Bottom, IntPtr.Zero, default(N.RECT));
+            if (!Stay) GoHome(); else if (away) Fly(HomeX, HomeY, homePerch, homeRect);
         }
 
         // the focus session is over: go home once the current sign is done
@@ -115,7 +121,8 @@ namespace Obsidot
             double now = U.Now, dt = Math.Min(0.05, now - last); last = now;
             if (leaveT < 0)
             {
-                if (flying)   // a leap along an arc
+                if (dragging) { }
+                else if (flying)   // a leap along an arc
                 {
                     double k = U.Clamp01((now - flyT0) / flyDur), arc = 4 * k * (1 - k);
                     x = fx0 + (fx1 - fx0) * (float)k;
@@ -139,7 +146,9 @@ namespace Obsidot
                         if (y >= ground) { y = ground; pet.Land(vy); falling = false; vy = 0; landT = now; Snd.Play("boing"); }
                     }
                 }
-                if (Talking)
+                if (Talking && autoAt > 0 && AutoLeft != lastTick && !flying) { lastTick = AutoLeft; if (lastTick > 0) Snd.Play("tick"); } // the countdown ticks
+                if (dragging) { var c = Cursor.Position; x = c.X - grabX; y = c.Y - grabY; }
+                if (Talking && !dragging)
                 {
                     if (autoAt > 0 && now >= autoAt && !flying)       // the countdown ran out: it does it itself
                     {
@@ -203,15 +212,56 @@ namespace Obsidot
         protected override void OnMouseDown(MouseEventArgs e)
         {
             if (leaveT >= 0) return;
-            if (!Talking)   // the buddy, idle: a poke for a heart, right-click for the settings
+            if (e.Button == MouseButtons.Left) { pressed = true; dragging = false; pressAt = Cursor.Position; grabX = pressAt.X - x; grabY = pressAt.Y - y; return; }
+            if (!Talking) { if (PetMenu != null) PetMenu(Cursor.Position); return; }   // the idle buddy: its settings
+            var d = dismiss; if (d != null) try { d(); } catch (Exception ex) { Settings.Log(ex); }
+            EndSay();
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            if (!pressed || dragging) return;
+            var c = Cursor.Position;
+            if (Math.Abs(c.X - pressAt.X) + Math.Abs(c.Y - pressAt.Y) < 6 * S) return;
+            dragging = true; flying = falling = false; perch = IntPtr.Zero; pet.Scared = true; Snd.Play("swish"); // picked up: it dangles, a little alarmed
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            if (!pressed || e.Button != MouseButtons.Left) return;
+            pressed = false;
+            if (dragging)   // let go: it drops onto the title bar under it, or down to the taskbar
             {
-                if (e.Button == MouseButtons.Left) pet.Poke(U.Now);
-                else if (PetMenu != null) PetMenu(Cursor.Position);
+                dragging = false; pet.Scared = false;
+                IntPtr p; N.RECT pr; ground = GroundAt(x, y, out p, out pr); perch = p; perchRect = pr;
+                falling = true; vy = 0;
+                if (!Nagging) { homeX = x; homeY = ground; homePerch = p; homeRect = pr; if (Moved != null) Moved(new Point((int)x, (int)y)); }
                 return;
             }
-            if (e.Button == MouseButtons.Left) { var act = click; if (act != null) try { act(); } catch (Exception ex) { Settings.Log(ex); } pet.Cheer(U.Now, true); Snd.Play("boing"); }
-            else { var d = dismiss; if (d != null) try { d(); } catch (Exception ex) { Settings.Log(ex); } }
+            if (leaveT >= 0) return;
+            if (!Talking) { pet.Poke(U.Now); return; }   // the idle buddy: a poke for a heart
+            var act = click; if (act != null) try { act(); } catch (Exception ex) { Settings.Log(ex); }
+            pet.Cheer(U.Now, true); Snd.Play("boing");
             EndSay();
+        }
+
+        // what's under (px, py): the top edge of a window just below its feet (that window in p), or the taskbar
+        float GroundAt(float px, float py, out IntPtr p, out N.RECT pr)
+        {
+            var wa = Screen.FromPoint(new Point((int)px, (int)py)).WorkingArea;
+            p = IntPtr.Zero; pr = default(N.RECT);
+            for (IntPtr h = N.GetWindow(Handle, 2); h != IntPtr.Zero; h = N.GetWindow(h, 2))   // windows below this one, front to back
+            {
+                N.RECT r;
+                if (!N.IsWindowVisible(h) || N.IsIconic(h) || !N.GetWindowRect(h, out r) || px < r.L || px > r.R || py > r.B) continue;
+                if (py < r.T - 60 * S) continue;
+                var sb = new StringBuilder(64); N.GetClassName(h, sb, 64); string cls = sb.ToString();
+                if (cls == "Progman" || cls == "WorkerW" || cls == "Shell_TrayWnd") break;
+                if (r.T < wa.Top + 70 * S || r.R - r.L < 300 * S) break;               // maximized or tiny: nothing to stand on
+                if (py <= r.T + 40 * S) { p = h; pr = r; return r.T + 1; }                 // its title bar
+                break;                                                                   // inside a window: down it goes
+            }
+            return wa.Bottom;
         }
 
         protected override void Dispose(bool disposing) { if (disposing) timer.Dispose(); base.Dispose(disposing); }

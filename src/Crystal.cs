@@ -33,7 +33,7 @@ namespace Obsidot
         readonly Spring dial = new Spring(0, 140, 17) { Eps = 0.01 }; // arc length, in minutes
         double Remaining { get { return (timerEnd - DateTime.UtcNow).TotalSeconds; } }
 
-        int marks, nags; double focusTotal, distractSec, lastNag = -100; string nagLine, roamLine;
+        int marks, nags; double focusTotal, distractSec, lastNag = -100; string nagLine, roamLine; bool wasNagging;
         readonly HashSet<IntPtr> allowed = new HashSet<IntPtr>();   // windows you said are fine for this session
 
         void StartTimer()
@@ -41,7 +41,7 @@ namespace Obsidot
             timerState = 2; timerEnd = DateTime.UtcNow.AddMinutes(Settings.Focus); Settings.Save(); Snd.Play("buzz"); Vibe(2.4f, 0.2); Wake();
             focusTotal = Settings.Focus * 60; marks = 0; nags = 0; distractSec = 0; allowed.Clear();
             pet.Cheer(U.Now, false);
-            Roam("FOCUS ON", Settings.Focus + " MIN. YOU GOT THIS", null, 5, false);
+            Roam("FOCUS ON", Settings.Focus + " MIN. YOU GOT THIS", null, 5, false, null, "start");
         }
 
         // a focus session that ended: one more for today
@@ -61,8 +61,8 @@ namespace Obsidot
             if (timerState == 2)   // a word at halfway and near the end
             {
                 double rem = Remaining;
-                if ((marks & 1) == 0 && focusTotal >= 20 * 60 && rem <= focusTotal / 2) { marks |= 1; Roam("HALFWAY", (int)Math.Ceiling(rem / 60) + " MIN LEFT. KEEP GOING", null, 6, false); }
-                if ((marks & 2) == 0 && focusTotal >= 10 * 60 && rem <= 5 * 60) { marks |= 2; Roam("5 MIN LEFT", "FINISH STRONG", null, 6, false); }
+                if ((marks & 1) == 0 && focusTotal >= 20 * 60 && rem <= focusTotal / 2) { marks |= 1; Roam("HALFWAY", (int)Math.Ceiling(rem / 60) + " MIN LEFT. KEEP GOING", null, 6, false, null, "chime"); }
+                if ((marks & 2) == 0 && focusTotal >= 10 * 60 && rem <= 5 * 60) { marks |= 2; Roam("5 MIN LEFT", "FINISH STRONG", null, 6, false, null, "alert"); }
                 if ((marks & 4) == 0 && rem <= 60) { marks |= 4; pet.Cheer(now, false); Wake(); }
             }
             if (timerState == 2 && Remaining <= 0)
@@ -557,10 +557,10 @@ namespace Obsidot
         bool powerKnown, wasPlugged, sawCharge, fullSaid; DateTime lateDay;
         readonly Dictionary<string, double> seenFiles = new Dictionary<string, double>();
 
-        public void Roam(string l1, string l2, Action act, double life, bool urgent, Action dismiss = null)
+        public void Roam(string l1, string l2, Action act, double life, bool urgent, Action dismiss = null, string sound = null)
         {
             roamQueue.RemoveAll(q => (string)q[0] == l1 && (string)q[1] == l2);
-            roamQueue.Add(new object[] { l1, l2, act, life, urgent, dismiss });
+            roamQueue.Add(new object[] { l1, l2, act, life, urgent, dismiss, sound });
             NextRoam();
         }
 
@@ -574,12 +574,12 @@ namespace Obsidot
             if (roamer != null)
             {
                 if (!roamer.Stay || roamer.Talking) return;                // a sign is already up
-                roamQueue.RemoveAt(0); roamLine = (string)q[0];
+                roamQueue.RemoveAt(0); roamLine = (string)q[0]; if (q[6] != null) Snd.Play((string)q[6]);
                 string l2 = (string)q[1];
                 roamer.Say((string)q[0], l2 == null ? null : (Func<string>)(() => l2), (Action)q[2], (Action)q[5], (double)q[3], IntPtr.Zero, 0);
                 return;
             }
-            roamQueue.RemoveAt(0);
+            roamQueue.RemoveAt(0); if (q[6] != null) Snd.Play((string)q[6]);
             roamer = new Roamer(pet, (string)q[0], (string)q[1], (Action)q[2], (double)q[3], (Action)q[5]); roamLine = (string)q[0];
             Hook(roamer); roamer.Show();
         }
@@ -590,8 +590,12 @@ namespace Obsidot
             var b = Roamer.Buddy(pet, Screen.FromPoint(new Point((int)cx, (int)cy)).WorkingArea);
             b.Idle = () => "FOCUS " + (int)Math.Ceiling(Math.Max(0, Remaining) / 60) + " MIN";
             b.PetMenu = PetMenu;
+            if (buddyHome.HasValue) b.HomeAt(buddyHome.Value);
+            b.Moved = p => buddyHome = p;
             roamer = b; roamLine = null; Hook(b); b.Show();
         }
+
+        Point? buddyHome;   // where you last put the focus buddy
 
         void Hook(Roamer r)
         {
@@ -616,7 +620,7 @@ namespace Obsidot
             double idle = Pet.IdleSeconds();
             if (idle > 300) { activeSec = 0; breakSaid = false; }           // you took a break: the count starts over
             else if (idle < 60) activeSec += step;
-            if (activeSec > 50 * 60 && !breakSaid && timerState != 2 && Settings.Remind) { breakSaid = true; Roam("BREAK TIME", "50 MIN NONSTOP", null, 30, false); }
+            if (activeSec > 50 * 60 && !breakSaid && timerState != 2 && Settings.Remind) { breakSaid = true; Roam("BREAK TIME", "50 MIN NONSTOP", null, 30, false, null, "bell"); }
             if (breakSaid && activeSec > 70 * 60) { breakSaid = false; activeSec = 50 * 60 - 1; }  // still going 20 min later: it asks again
 
             var ps = SystemInformation.PowerStatus;
@@ -627,17 +631,18 @@ namespace Obsidot
                 if (plugged && powerKnown && !wasPlugged) { pet.Cheer(now, true); Snd.Play("plug"); }        // plugged in: a happy hop
                 if (plugged && pct < 100) sawCharge = true;
                 if (!plugged) { sawCharge = false; fullSaid = false; }
-                if (plugged && pct >= 100 && sawCharge && !fullSaid && Settings.Alerts) { fullSaid = true; Roam("BATTERY FULL", "YOU CAN UNPLUG", null, 20, false); }
+                if (plugged && pct >= 100 && sawCharge && !fullSaid && Settings.Alerts) { fullSaid = true; Roam("BATTERY FULL", "YOU CAN UNPLUG", null, 20, false, null, "full"); }
                 if (pet.Charging != (plugged && pct < 100)) { pet.Charging = plugged && pct < 100; Wake(); }  // green while it charges
                 wasPlugged = plugged; powerKnown = true;
                 if (ps.PowerLineStatus == PowerLineStatus.Online) batteryWarned = 0;
                 else if (!Settings.Alerts) { }
-                else if (pct <= 7 && batteryWarned < 2) { batteryWarned = 2; Roam("BATTERY " + pct + "%", "PLUG IN NOW", null, 40, true); }
-                else if (pct <= 15 && batteryWarned < 1) { batteryWarned = 1; Roam("BATTERY " + pct + "%", "PLUG IN SOON", null, 30, true); }
+                else if (pct <= 10 && batteryWarned < 2) { batteryWarned = 2; Roam("BATTERY " + pct + "%", "PLUG IN NOW", null, 40, true, null, "lowbat"); }
+                else if (pct <= SaverAt() && batteryWarned < 1)
+                { batteryWarned = 1; Roam("BATTERY " + pct + "%", "SAVER ON. PLUG IN SOON", null, 30, true, null, "lowbat"); }
             }
 
             var clock = DateTime.Now;   // up past 1 am and still going: once a night
-            if (clock.Hour >= 1 && clock.Hour < 5 && idle < 30 && lateDay != clock.Date && Settings.Remind) { lateDay = clock.Date; Roam("ITS LATE", "TIME TO SLEEP" + You(), null, 20, false); }
+            if (clock.Hour >= 1 && clock.Hour < 5 && idle < 30 && lateDay != clock.Date && Settings.Remind) { lateDay = clock.Date; Roam("ITS LATE", "TIME TO SLEEP" + You(), null, 20, false, null, "yawn"); }
 
             Guard(now, step);
             NextRoam();
@@ -659,13 +664,15 @@ namespace Obsidot
                 distractSec = 0; lastNag = -100;                           // the next visit gets caught again
                 return;
             }
+            if (wasNagging && !(buddy != null ? buddy.Nagging : roamer != null)) { distractSec = 0; lastNag = -100; } // that warning is over: the next one starts fresh
+            wasNagging = buddy != null ? buddy.Nagging : roamer != null && roamLine == nagLine;
             distractSec += step;
             if (distractSec < 4 || now - lastNag < 40) return;
             if (buddy != null ? buddy.Nagging : roamer != null) return;
             lastNag = now; nags++;
             IntPtr w = fg; bool browser = IsBrowser(w);
             nagLine = nags == 1 ? "HEY! NO " + site : nags == 2 ? "STILL ON " + site : "BACK TO WORK!";
-            pet.Angry(now);
+            pet.Angry(now); wasNagging = true;
             Func<string> hint = () =>
             {
                 int left = (int)Math.Ceiling(Math.Max(0, Remaining) / 60);
@@ -692,6 +699,26 @@ namespace Obsidot
             return null;
         }
 
+        // Windows' battery saver threshold for this power plan (20% unless you changed it), so the pet warns when it kicks in
+        static int saverAt = -1;
+        static int SaverAt()
+        {
+            if (saverAt >= 0) return saverAt;
+            saverAt = 20;
+            try
+            {
+                IntPtr scheme;
+                if (N.PowerGetActiveScheme(IntPtr.Zero, out scheme) == 0)
+                {
+                    Guid s = (Guid)System.Runtime.InteropServices.Marshal.PtrToStructure(scheme, typeof(Guid)), sub = new Guid("de830923-a562-41af-a086-e3a2c6bad2da"), set = new Guid("e69653ca-cf7f-4f05-aa73-cb833fa90ad4");
+                    uint v; if (N.PowerReadDCValueIndex(IntPtr.Zero, ref s, ref sub, ref set, out v) == 0 && v >= 5 && v <= 100) saverAt = (int)v;
+                    N.LocalFree(scheme);
+                }
+            }
+            catch (Exception ex) { Settings.Log(ex); }
+            return saverAt;
+        }
+
         static bool IsBrowser(IntPtr w)
         {
             try { uint pid; N.GetWindowThreadProcessId(w, out pid); string name = System.Diagnostics.Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant(); return Array.IndexOf(Browsers, name) >= 0; }
@@ -711,7 +738,7 @@ namespace Obsidot
                 if (N.GetForegroundWindow() == w && Distraction(w) == site)
                 {
                     N.keybd_event(0x11, 0, 0, UIntPtr.Zero); N.keybd_event(0x57, 0, 0, UIntPtr.Zero);   // Ctrl+W: closes that tab only
-                    N.keybd_event(0x57, 0, 2, UIntPtr.Zero); N.keybd_event(0x11, 0, 2, UIntPtr.Zero);
+                    N.keybd_event(0x57, 0, 2, UIntPtr.Zero); N.keybd_event(0x11, 0, 2, UIntPtr.Zero); Snd.Play("pop");
                 }
                 else if (Distraction(w) == site) N.ShowWindow(w, 6);           // couldn't bring it forward: hide it instead
             };
@@ -753,7 +780,7 @@ namespace Obsidot
                 }
                 catch { return; }
                 string shown = System.IO.Path.GetFileNameWithoutExtension(name); if (shown.Length > 16) shown = shown.Substring(0, 15) + "-";
-                Roam("NEW FILE", (shown + ext).ToUpperInvariant(), () => System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + path + "\""), 25, false);
+                Roam("NEW FILE", (shown + ext).ToUpperInvariant(), () => System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + path + "\""), 25, false, null, "fact");
             };
             check.Start();
         }

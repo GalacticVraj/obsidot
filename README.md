@@ -102,6 +102,7 @@
 | Right-click or scroll | The menu |
 | Drag, or throw it | It glides and bounces off the screen edges |
 | Right-click the pet | Its settings: the focus guard, which sites it watches, reminders, your name |
+| Drag the pet during focus | Put it anywhere on the taskbar, or on a window's title bar |
 | Hold the clock still for 2 s | Turn Obsidot off (let go early to cancel) |
 | <kbd>Alt</kbd> + <kbd>K</kbd> | Desktop Assault · <kbd>1</kbd>–<kbd>4</kbd> pick a weapon · <kbd>Esc</kbd> to leave |
 | <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> | Scratchpad |
