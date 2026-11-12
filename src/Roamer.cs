@@ -14,15 +14,15 @@ namespace Obsidot
     {
         static readonly float S0 = U.S;
         readonly float S = U.S; readonly Pet pet; readonly Timer timer = new Timer { Interval = 15 };
-        readonly string line1, line2; readonly Action click; readonly double life;
+        readonly string line1, line2; readonly Action click, dismiss; readonly double life;
         static Color Red { get { return Theme.T.Accent; } }
         float x, y, vy, ground; bool falling = true; double t0, last, landT = -10, leaveT = -1;
         IntPtr perch; N.RECT perchRect;
         int Foot { get { return LH - (int)(8 * S); } } // where its feet are inside this window
 
-        public Roamer(Pet pet, string line1, string line2, Action click, double life) : base((int)(300 * S0), (int)(200 * S0))
+        public Roamer(Pet pet, string line1, string line2, Action click, double life, Action dismiss = null) : base((int)(300 * S0), (int)(200 * S0))
         {
-            this.pet = pet; this.line1 = line1; this.line2 = line2; this.click = click; this.life = life;
+            this.pet = pet; this.line1 = line1; this.line2 = line2; this.click = click; this.dismiss = dismiss; this.life = life;
             FindPerch();
             y = ground - 320 * S; t0 = last = U.Now;                     // it drops in from above
             pet.Roaming = true; pet.Asleep = false; pet.Scared = false; pet.Walking = false;
@@ -121,6 +121,7 @@ namespace Obsidot
         {
             if (leaveT >= 0) return;
             if (e.Button == MouseButtons.Left) { if (click != null) try { click(); } catch (Exception ex) { Settings.Log(ex); } pet.Cheer(U.Now, true); Snd.Play("boing"); }
+            else if (dismiss != null) try { dismiss(); } catch (Exception ex) { Settings.Log(ex); }
             GoHome();
         }
 

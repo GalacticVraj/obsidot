@@ -54,7 +54,13 @@
 
 <h3>🐾 A pet that lives on your desk</h3>
 
-<p>A tiny black-glass creature sits on top. Its eyes follow your cursor; it blinks, hops along the rim and bobs to the beat.<br>Click it for a heart. Walk away and it dozes off. When something matters, <b>just the pet</b> drops onto your window with a sign:<br><b>FOCUS DONE</b> &nbsp;·&nbsp; <b>BREAK TIME</b> &nbsp;·&nbsp; <b>BATTERY 12%</b> &nbsp;·&nbsp; <b>NEW FILE</b></p>
+<p>A tiny black-glass creature sits on top. Its eyes follow your cursor; it blinks, hops along the rim and bobs to the beat.<br>Click it for a heart. Walk away and it dozes off. When something matters, <b>just the pet</b> drops onto your window with a sign:<br><b>FOCUS DONE</b> &nbsp;·&nbsp; <b>BREAK TIME</b> &nbsp;·&nbsp; <b>BATTERY 12%</b> &nbsp;·&nbsp; <b>NEW FILE</b> &nbsp;·&nbsp; <b>BATTERY FULL</b> &nbsp;·&nbsp; <b>ITS LATE</b></p>
+
+<img src="docs/media/pet-moods.png" width="560" alt="The pet's moods: calm, charging with a green glow, focused, cross, and celebrating under confetti">
+
+<p>It has moods. It glows <b>green while your laptop charges</b> and hops when you plug in. During a focus session its light turns blue and its eyes go <b>half-lidded, in the zone</b>.<br>It cheers you on at the start, at halfway and with 5 minutes left, and when the timer ends it <b>throws a party</b> and counts your sessions for the day.</p>
+
+<p><b>🚫 The focus guard.</b> Open YouTube, Instagram or Netflix mid-session and, four seconds later, the pet jumps out <b>cross</b>, stomping:<br><b>HEY! NO YOUTUBE</b>. Click it and it closes that tab for you. Right-click if it's for work, and it lets that window be.</p>
 
 <br><br>
 

@@ -18,8 +18,9 @@ Obsidot is a clock made of light that lives right on your desktop.
 
 • It knows your name: good morning, good evening, welcome back, scrolling through the dots.
 • It dances to your music: rays of dots shoot out of the rim like a round spectrum analyser, and the edge wobbles with every kick drum.
-• A tiny desk pet sits on top. It follows your cursor, dozes off when you're away, and hops onto your window to tell you when it's time for a break, your battery is low, or a download has finished.
-• Focus Timer: scroll to wind it like a kitchen timer, click, and the dots count down.
+• A tiny desk pet sits on top. It follows your cursor, dozes off when you're away, and hops onto your window to tell you when it's time for a break, your battery is low or full, or a download has finished. It glows green while your laptop charges.
+• Focus guard: during a focus session, open YouTube, Instagram or Netflix and the pet jumps out, cross, and asks you to close it. One click closes the tab.
+• Focus Timer: scroll to wind it like a kitchen timer, click, and the dots count down. The pet cheers you on at halfway and with 5 minutes left, then celebrates and counts your sessions for the day.
 • Scratchpad: press Alt + Shift + N in any app and a notepad slides out. It saves as you type.
 • Desktop Assault: press Alt + K and your whole screen turns to glass. Crack it, shatter it, or pull it into a black hole. Press Esc and everything is exactly as it was. Nothing on your PC is ever touched.
 • Vector Hoops: a tiny basketball game inside the clock.
@@ -36,7 +37,9 @@ Dot-matrix desktop clock
 Greets you by name
 Music-reactive visualizer
 Desk pet with break, battery and download reminders
-Focus timer
+Focus timer with halfway and 5-minute cheers
+Focus guard: the pet catches you on YouTube and closes the tab
+Pet moods: charging glow, focused, cross, celebrating
 Quick scratchpad (Alt + Shift + N)
 Desktop Assault: shatter your screen like glass (Alt + K)
 Mini basketball game

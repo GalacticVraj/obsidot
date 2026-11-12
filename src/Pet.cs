@@ -16,12 +16,14 @@ namespace Obsidot
         readonly Spring squash = new Spring(0, 240, 9);   // + squashed flat, - stretched tall
         double blinkT = -10, nextBlink = 3, nextWander = 25, heartT = -10, wakeT = -10, sleptAt, lastKick = -10, cheerT = -10, sadT = -10;
         public bool Asleep, Walking, Scared, Roaming; public int Face = 1;
+        public bool Charging, Focused;                    // moods set from outside: plugged in (green), a focus session (blue)
+        double partyT = -10, angryT = -10, nextStomp;
         public double ArriveAt = -1;                      // it drops in from above at this time; hidden before
         RectangleF hit;
 
         public bool Busy(double now)
         {
-            return Walking || jy > 0.1f || vy != 0 || !squash.Rest || now - heartT < 1.2 || now - wakeT < 1.6 || now - blinkT < 0.2 || now - sadT < 1.2 || (ArriveAt > 0 && now < ArriveAt + 1.5);
+            return Walking || jy > 0.1f || vy != 0 || !squash.Rest || now - heartT < 1.2 || now - wakeT < 1.6 || now - blinkT < 0.2 || now - sadT < 1.2 || (ArriveAt > 0 && now < ArriveAt + 1.5) || Partying(now) || Cross(now);
         }
 
         public bool Visible(double now) { return !Roaming && (ArriveAt < 0 || now >= ArriveAt); }
@@ -46,7 +48,14 @@ namespace Obsidot
             if (Grounded) vy = 230 * S;
             squash.V -= 4; if (heart) heartT = now;
         }
-        public void Sad(double now) { sadT = now; squash.V += 4; }
+        public void Sad(double now) { sadT = now; squash.V += 4; Snd.Play("sigh"); }
+
+        // a celebration: two seconds of bouncing under a shower of confetti, its light cycling through colours
+        public void Party(double now) { partyT = now; Asleep = false; heartT = now + 1.5; Snd.Play("yay"); }
+        // cross: brows down, the light flashing, stomping on the spot
+        public void Angry(double now) { angryT = now; Asleep = false; Snd.Play("grr"); }
+        bool Partying(double now) { return now - partyT < 2.4; }
+        bool Cross(double now) { return now - angryT < 3.5; }
 
         bool WakeUp(double now, bool fromAway)
         {
@@ -60,6 +69,8 @@ namespace Obsidot
         public void Tick(double dt, double now, PointF eyeTo)
         {
             if (!Asleep && now > nextBlink) { blinkT = now; nextBlink = now + 2.2 + rnd.NextDouble() * 4.5; }
+            if (Grounded && Partying(now)) { vy = 300 * S; squash.V -= 5; }
+            else if (Grounded && Cross(now) && now > nextStomp) { vy = 140 * S; squash.V += 5; nextStomp = now + 0.42; }
             if (jy > 0 || vy != 0)
             {
                 vy -= 1500 * S * (float)dt; jy += vy * (float)dt;
@@ -112,7 +123,7 @@ namespace Obsidot
         // anywhere: (px, groundY) is the point between its feet. Returns the area it covers.
         public RectangleF DrawAt(Graphics g, float px, float groundY, double now, float a)
         {
-            if (Scared) px += (float)Math.Sin(now * 70) * 1.2f * S;                 // trembling
+            if (Scared || Cross(now)) px += (float)Math.Sin(now * 70) * 1.2f * S;   // trembling, or shaking with rage
             double breath = Math.Sin(now * (Asleep ? 1.5 : 2.7)) * (Asleep ? 0.05 : 0.022);
             float sq = (float)U.Clamp(squash.X * 0.07 + breath + (Scared ? 0.22 : 0), -0.35, 0.4);
             float w = 30 * S * (1 + sq), h = 22 * S * (1 - sq), feet = 3 * S, by = groundY - feet - jy; // by: bottom of the body
@@ -127,6 +138,13 @@ namespace Obsidot
                 g.FillEllipse(br, px + 2 * S, by - 1 * S, 7 * S, feet + 1.5f * S);
             }
             var body = new RectangleF(px - w / 2, by - h, w, h);
+            if (Charging && !Partying(now)) // a soft green aura while it charges
+                using (var path = new GraphicsPath())
+                {
+                    path.AddEllipse(body.X - 9 * S, body.Y - 8 * S, body.Width + 18 * S, body.Height + 16 * S);
+                    using (var pg = new PathGradientBrush(path) { CenterColor = Color.FromArgb((int)(85 * a), Green), SurroundColors = new[] { Color.FromArgb(0, Green) } })
+                        g.FillPath(pg, path);
+                }
             using (var lg = new LinearGradientBrush(new PointF(0, body.Top - 1), new PointF(0, body.Bottom + 1), Color.FromArgb((int)(255 * a), Theme.Mix(Theme.T.Top, Theme.T.Shine, 0.03)), Color.FromArgb((int)(255 * a), Theme.T.Bot)))
                 g.FillEllipse(lg, body);
             using (var pen = new Pen(Color.FromArgb((int)(40 * a), Theme.T.Rim), 1 * S)) g.DrawEllipse(pen, body);
@@ -135,21 +153,31 @@ namespace Obsidot
             // antenna with a red light: steady while awake, a slow standby pulse while asleep, flickering when scared
             float ax = px + Face * 1.5f * S, ay = body.Top + 1 * S, tipX = ax + (float)Math.Sin(now * 2.1) * 1.5f * S - Face * 2 * S, tipY = ay - 8 * S;
             using (var pen = new Pen(Color.FromArgb((int)(200 * a), Theme.Mix(Theme.T.Bot, Theme.T.Ink, 0.15)), 1.3f * S)) g.DrawBezier(pen, ax, ay, ax, ay - 4 * S, tipX, tipY + 3 * S, tipX, tipY);
-            double led = Asleep ? 0.25 + 0.75 * (0.5 + 0.5 * Math.Sin(now * 2.2)) : Scared ? (Math.Sin(now * 40) > 0 ? 1 : 0.3) : 1;
-            using (var br = new SolidBrush(U.A(Red, led * a))) g.FillEllipse(br, tipX - 2 * S, tipY - 2 * S, 4 * S, 4 * S);
+            bool cross = Cross(now), party = Partying(now);
+            double led = cross ? (Math.Sin(now * 30) > 0 ? 1 : 0.25) : Asleep ? 0.25 + 0.75 * (0.5 + 0.5 * Math.Sin(now * 2.2)) : Scared ? (Math.Sin(now * 40) > 0 ? 1 : 0.3) : 1;
+            Color ledC = cross ? Red : party ? Hue(now * 1.6) : Charging ? Green : Focused ? Blue : Red;
+            if (cross || party || Charging || Focused) using (var br = new SolidBrush(U.A(ledC, 0.28 * led * a))) g.FillEllipse(br, tipX - 4.5f * S, tipY - 4.5f * S, 9 * S, 9 * S);
+            using (var br = new SolidBrush(U.A(ledC, led * a))) g.FillEllipse(br, tipX - 2 * S, tipY - 2 * S, 4 * S, 4 * S);
+            if (Charging && !party && !Asleep) Pattern(g, Bolt, px - 23 * S, body.Top - 14 * S, 2.1f * S, Green, a * 0.95f);
 
             // dot eyes
             float p = 1.9f * S, ds = 1.55f * S;
             float ex = px + Face * 0.8f * S + lookX * 2.4f * S, ey = by - h * 0.56f + lookY * 1.6f * S;
-            bool happy = now - heartT < 1.1 || now - wakeT < 1.6 || now - cheerT < 0.6, sad = now - sadT < 1.1;
+            bool happy = now - heartT < 1.1 || now - wakeT < 1.6 || now - cheerT < 0.6 || party, sad = now - sadT < 1.1;
             using (var br = new SolidBrush(U.A(Theme.T.Ink, 0.95 * a)))
                 for (int e = -1; e <= 1; e += 2)
                 {
                     float x0 = ex + e * 6.2f * S;
                     if (Asleep || Scared) { for (int i = -1; i <= 1; i++) g.FillEllipse(br, x0 + i * p - ds / 2, ey + (Scared ? 0 : p) - ds / 2, ds, ds); } // squeezed shut
                     else if (sad) { g.FillEllipse(br, x0 - p - ds / 2, ey - (e < 0 ? 0 : p) - ds / 2 + p, ds, ds); g.FillEllipse(br, x0 - ds / 2, ey + p / 2 - ds / 2, ds, ds); g.FillEllipse(br, x0 + p - ds / 2, ey - (e < 0 ? p : 0) - ds / 2 + p, ds, ds); } // droopy
+                    else if (cross) // a 2 x 2 glare under a brow slanting down to the middle
+                    {
+                        for (int r = 0; r < 2; r++) for (int c = 0; c < 2; c++) g.FillEllipse(br, x0 + (c - 0.5f) * p - ds / 2, ey + r * p - ds / 2, ds, ds);
+                        for (int k = -1; k <= 1; k++) g.FillEllipse(br, x0 + k * p - ds / 2, ey - 1.7f * p - k * e * 0.6f * p - ds / 2, ds, ds);
+                    }
                     else if (happy) { g.FillEllipse(br, x0 - p - ds / 2, ey - ds / 2, ds, ds); g.FillEllipse(br, x0 - ds / 2, ey - p - ds / 2, ds, ds); g.FillEllipse(br, x0 + p - ds / 2, ey - ds / 2, ds, ds); } // ^ ^
                     else if (now - blinkT < 0.13) { g.FillEllipse(br, x0 - p / 2 - ds / 2, ey - ds / 2, ds, ds); g.FillEllipse(br, x0 + p / 2 - ds / 2, ey - ds / 2, ds, ds); }
+                    else if (Focused) for (int r = 0; r <= 1; r++) for (int c = 0; c < 2; c++) g.FillEllipse(br, x0 + (c - 0.5f) * p - ds / 2, ey + r * p - ds / 2, ds, ds); // in the zone: lids half down
                     else for (int r = -1; r <= 1; r++) for (int c = 0; c < 2; c++) g.FillEllipse(br, x0 + (c - 0.5f) * p - ds / 2, ey + r * p - ds / 2, ds, ds); // open: 2 x 3 dots
                 }
 
@@ -159,9 +187,29 @@ namespace Obsidot
                     double t = ((now * 0.45) + i / 3.0) % 1;
                     Pattern(g, Zed, px + 12 * S + (float)(t * 14 * S), body.Top - 4 * S - (float)(t * 26 * S), (1.5f + (float)t * 0.9f) * S, Theme.T.Ray, a * (float)(Math.Sin(t * Math.PI) * 0.85));
                 }
+            if (party) // confetti: a burst of coloured dots, falling and fading
+            {
+                double t = now - partyT;
+                for (int i = 0; i < 18; i++)
+                {
+                    double ang = -Math.PI / 2 + (i * 2.399963 % 1.0 - 0.5) * 2.6, sp = (42 + (i * 37 % 40)) * S;
+                    float cx = px + (float)(Math.Cos(ang) * sp * t), cy = body.Top - 4 * S + (float)(Math.Sin(ang) * sp * t + 55 * S * t * t);
+                    float da = a * (float)Math.Max(0, 1 - t / 2.4), sz = (1.6f + i % 3 * 0.5f) * S;
+                    using (var br = new SolidBrush(U.A(Hue(i * 0.17), da))) g.FillEllipse(br, cx - sz / 2, cy - sz / 2, sz, sz);
+                }
+            }
             double ht = now - heartT;
             if (ht >= 0 && ht < 1.1) Pattern(g, Heart, px - 5 * S, body.Top - 14 * S - (float)(ht * 18 * S), 2.4f * S, Red, a * (float)(1 - ht / 1.1));
             return area;
+        }
+
+        static readonly string[] Bolt = { "..XX", ".XX.", "XXXX", ".XX.", "XX.." };
+        static readonly Color Green = Color.FromArgb(70, 226, 120), Blue = Color.FromArgb(80, 186, 255);
+        static Color Hue(double t) // a saturated rainbow, t in turns
+        {
+            double h = (t % 1 + 1) % 1 * 6; int i = (int)h; double f = h - i;
+            int q = (int)(255 * (1 - f)), u = (int)(255 * f);
+            switch (i) { case 0: return Color.FromArgb(255, u, 60); case 1: return Color.FromArgb(q, 255, 60); case 2: return Color.FromArgb(60, 255, u); case 3: return Color.FromArgb(60, q, 255); case 4: return Color.FromArgb(u, 60, 255); default: return Color.FromArgb(255, 60, q); }
         }
 
         static void Pattern(Graphics g, string[] rows, float x, float y, float p, Color c, float a)

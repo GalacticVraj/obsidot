@@ -27,6 +27,7 @@ namespace Obsidot
             Settings.Load();
             if (args.Length > 0 && args[0] == "--shots") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Run(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--assault") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.AssaultDemo(args.Length > 1 ? args[1] : ".", args.Length > 2 ? args[2] : "", args.Length > 3 ? args[3] : null); return; }
+            if (args.Length > 0 && args[0] == "--pet") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.PetMoods(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--anim") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Anim(args.Length > 1 ? args[1] : ".", args.Length > 2 && args[2] == "full"); return; }
             if (args.Length > 1 && args[0] == "--bench") { Settings.NoSave = true; Snd.Init(); Crystal.BenchLog = args[1]; Application.Run(new Crystal()); return; }
             bool fresh;
@@ -214,6 +215,9 @@ namespace Obsidot
         public static bool Sound = true, Float = false, Auto = true;
         public static int Best = 0, Focus = 25;
         public static string Seen = "", Name = ""; public static bool Asked;
+        public static string Streak = "";   // "yyyy-MM-dd:n", focus sessions finished today
+        // sites and apps the focus guard watches for, matched in the window title; edit in obsidot.ini, empty turns the guard off
+        public static string Distract = "YouTube,Instagram,Facebook,Netflix,Reddit,TikTok,Twitch,Prime Video,Hotstar,Snapchat";
         public static bool NoSave;
         public static string Dir { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Obsidot"); } }
         static string File_ { get { return Path.Combine(Dir, "obsidot.ini"); } }
@@ -249,7 +253,7 @@ namespace Obsidot
                     var inv = System.Globalization.CultureInfo.InvariantCulture;
                     if (k == "x") X = double.Parse(v, inv); else if (k == "y") Y = double.Parse(v, inv);
                     else if (k == "sound") Sound = v == "1"; else if (k == "auto") Auto = v == "1"; else if (k == "pin") Float = v == "0";
-                    else if (k == "best") Best = int.Parse(v); else if (k == "cards") Seen = v; else if (k == "focus") Focus = int.Parse(v); else if (k == "name") Name = v; else if (k == "asked") Asked = v == "1";
+                    else if (k == "best") Best = int.Parse(v); else if (k == "cards") Seen = v; else if (k == "focus") Focus = int.Parse(v); else if (k == "name") Name = v; else if (k == "asked") Asked = v == "1"; else if (k == "streak") Streak = v; else if (k == "distract") Distract = v;
                 }
                 catch { } // a damaged line keeps its default; the others still load
             }
@@ -270,7 +274,7 @@ namespace Obsidot
                 var inv = System.Globalization.CultureInfo.InvariantCulture;
                 string tmp = File_ + ".tmp"; // write aside, then swap: a power cut mid-write never empties the settings
                 File.WriteAllText(tmp, "x=" + X.ToString(inv) + "\ny=" + Y.ToString(inv) + "\nsound=" + (Sound ? 1 : 0) + "\nauto=" + (Auto ? 1 : 0) +
-                    "\npin=" + (Float ? 0 : 1) + "\nbest=" + Best + "\ncards=" + Seen + "\nfocus=" + Focus + "\nname=" + Name + "\nasked=" + (Asked ? 1 : 0) + "\n");
+                    "\npin=" + (Float ? 0 : 1) + "\nbest=" + Best + "\ncards=" + Seen + "\nfocus=" + Focus + "\nname=" + Name + "\nasked=" + (Asked ? 1 : 0) + "\nstreak=" + Streak + "\ndistract=" + Distract + "\n");
                 if (File.Exists(File_)) File.Replace(tmp, File_, null); else File.Move(tmp, File_);
             }
             catch { }
@@ -404,6 +408,11 @@ namespace Obsidot
         [StructLayout(LayoutKind.Sequential)] public struct MSG { public IntPtr hwnd; public uint message; public IntPtr wParam, lParam; public uint time; public POINT pt; }
         [DllImport("user32.dll")] public static extern bool PeekMessage(out MSG m, IntPtr h, uint min, uint max, uint remove);
         [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetWindowText(IntPtr h, System.Text.StringBuilder s, int n);
+        [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+        [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int cmd);
+        [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr h);
+        [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, int flags, UIntPtr extra);
         [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr h, StringBuilder sb, int n);
         [DllImport("user32.dll")] public static extern bool SystemParametersInfo(int a, int b, ref int v, int f);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -176,6 +176,29 @@ namespace Obsidot
             c.card.Shot(1.6, 2, true).Save(Path.Combine(dir, "thought-card.png"), ImageFormat.Png);
             using (var ro = new Roamer(c.pet, "NEW FILE", "PROJECT-NOTES.PDF", null, 25)) ro.Render(U.Now + 1).Save(Path.Combine(dir, "pet-sign.png"), ImageFormat.Png);
         }
+        // `Obsidot.exe --pet <dir>`: the pet in each mood, large, on transparent
+        public static void PetMoods(string dir)
+        {
+            Directory.CreateDirectory(dir);
+            string[] names = { "calm", "charging", "focused", "cross", "party" };
+            for (int m = 0; m < names.Length; m++)
+            {
+                var pet = new Pet(); double now = U.Now + 100; while (Math.Sin(now * 30) < 0.6) now += 0.005; // the angry light caught on, not mid-blink
+                if (m == 1) pet.Charging = true;
+                if (m == 2) pet.Focused = true;
+                if (m == 3) pet.Angry(now - 0.12);
+                if (m == 4) pet.Party(now - 0.55);
+                using (var b = new Bitmap((int)(140 * U.S), (int)(110 * U.S), PixelFormat.Format32bppArgb))
+                using (var g = Graphics.FromImage(b))
+                {
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    g.ScaleTransform(2, 2);
+                    pet.DrawAt(g, 35 * U.S, 50 * U.S, now, 1);
+                    b.Save(Path.Combine(dir, m + "-" + names[m] + ".png"), ImageFormat.Png);
+                }
+            }
+        }
+
         // `Obsidot.exe --assault <dir> [real|screen]`: Desktop Assault, every weapon, as frames;
         // on a made-up desktop, with `real` on your wallpaper and icons redrawn, with `screen` on a real screenshot
         public static void AssaultDemo(string dir, string mode, string window)

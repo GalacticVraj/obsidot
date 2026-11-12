@@ -51,7 +51,11 @@ namespace Obsidot
             Noise(b, .3, 30, .5, 0, .12); for (int i = 0; i < 8; i++) Glass(b, 900 + rnd.NextDouble() * 2400, .03, 5, .05 + rnd.NextDouble() * .3); Add("collapse", b);
             b = B(.35); Chirp(b, 300, 900, .16, .22, 0, false); Glass(b, 1760, .035, 12, .1); Add("boing", b);                        // the pet hops
             b = B(.4); Chirp(b, 700, 1400, .07, .12, 0, false); Chirp(b, 1000, 1900, .08, .1, .1, false); Add("chirp", b);             // the pet wakes, glad
-            b = B(1.6); Glass(b, 1046.5, .1, 2.6, 0); Glass(b, 1568, .08, 2.8, .16); Glass(b, 2093, .07, 3, .32); Add("done", b);       // the focus timer ends
+            b = B(1.6); Glass(b, 1046.5, .1, 2.6, 0); Glass(b, 1568, .08, 2.8, .16); Glass(b, 2093, .07, 3, .32); Add("done", b);
+            b = B(.6); Chirp(b, 900, 1300, .07, .1, 0, false); Chirp(b, 1200, 1750, .07, .1, .1, false); Chirp(b, 1500, 2400, .12, .11, .2, false); Glass(b, 2637, .04, 6, .3); Add("yay", b);   // the pet celebrates
+            b = B(.55); Buzz(b, .2, 0, .22); Chirp(b, 240, 150, .3, .18, 0, true); LP(b, .25); Add("grr", b);                                  // the pet grumbles
+            b = B(.35); Chirp(b, 520, 780, .05, .08, 0, false); Chirp(b, 780, 1170, .07, .09, .08, false); Add("plug", b);                     // power connected
+            b = B(.6); Chirp(b, 760, 420, .45, .07, 0, false); LP(b, .4); Add("sigh", b);                                                     // the pet is a little sad       // the focus timer ends
         }
 
         // One persistent output stream + a tiny software mixer on its own thread.
