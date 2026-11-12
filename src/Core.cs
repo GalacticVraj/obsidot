@@ -27,6 +27,7 @@ namespace Obsidot
             Settings.Load();
             if (args.Length > 0 && args[0] == "--shots") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Run(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--assault") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.AssaultDemo(args.Length > 1 ? args[1] : ".", args.Length > 2 ? args[2] : "", args.Length > 3 ? args[3] : null); return; }
+            if (args.Length > 0 && args[0] == "--menu") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.MenuShot(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--pet") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.PetMoods(args.Length > 1 ? args[1] : "."); return; }
             if (args.Length > 0 && args[0] == "--anim") { Settings.Sound = false; Settings.NoSave = true; Snd.Init(); Shots.Anim(args.Length > 1 ? args[1] : ".", args.Length > 2 && args[2] == "full"); return; }
             if (args.Length > 1 && args[0] == "--bench") { Settings.NoSave = true; Snd.Init(); Crystal.BenchLog = args[1]; Application.Run(new Crystal()); return; }

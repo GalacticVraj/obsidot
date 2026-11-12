@@ -176,6 +176,22 @@ namespace Obsidot
             c.card.Shot(1.6, 2, true).Save(Path.Combine(dir, "thought-card.png"), ImageFormat.Png);
             using (var ro = new Roamer(c.pet, "NEW FILE", "PROJECT-NOTES.PDF", null, 25)) ro.Render(U.Now + 1).Save(Path.Combine(dir, "pet-sign.png"), ImageFormat.Png);
         }
+        // `Obsidot.exe --menu <dir>`: the pet's settings panel, as a screenshot
+        public static void MenuShot(string dir)
+        {
+            Directory.CreateDirectory(dir);
+            var f = new PetSettings(new Point(500, 120), () => { }, n => { });
+            f.Show();
+            var end = U.Now + 0.7; while (U.Now < end) { System.Windows.Forms.Application.DoEvents(); System.Threading.Thread.Sleep(15); }
+            var r = f.Bounds; r.Inflate(16, 16);
+            using (var b = new Bitmap(r.Width, r.Height))
+            {
+                using (var g = Graphics.FromImage(b)) g.CopyFromScreen(r.Location, Point.Empty, r.Size);
+                b.Save(Path.Combine(dir, "settings.png"), ImageFormat.Png);
+            }
+            f.Close();
+        }
+
         // `Obsidot.exe --pet <dir>`: the pet in each mood, large, on transparent
         public static void PetMoods(string dir)
         {

@@ -441,66 +441,24 @@ namespace Obsidot
 
         NamePrompt namePrompt;
         // right-click the pet: everything about it, in one small menu
+        PetSettings petSettings;
         void PetMenu(Point at)
         {
-            var m = DarkMenu.Make();
-            Func<string, bool, Action, ToolStripMenuItem> toggle = (text, isChecked, act) =>
+            if (petSettings != null && !petSettings.IsDisposed) { petSettings.Close(); return; }
+            petSettings = new PetSettings(at, () =>
             {
-                var i = new ToolStripMenuItem(text) { Checked = isChecked };
-                i.Click += delegate { act(); Settings.Save(); Wake(); };
-                return i;
-            };
-            m.Items.Add(new ToolStripMenuItem("While you focus") { Enabled = false });
-            m.Items.Add(toggle("Catch distracting sites", Settings.Guard, () => Settings.Guard = !Settings.Guard));
-            var auto = toggle("Close them by itself", Settings.AutoClose, () => Settings.AutoClose = !Settings.AutoClose); auto.Enabled = Settings.Guard; m.Items.Add(auto);
-            var sites = DarkMenu.Sub("Sites it watches"); sites.Enabled = Settings.Guard;
-            var on = new List<string>(Settings.Sites());
-            var all = new List<string>(Settings.DefaultDistract.Split(','));
-            foreach (var s in on) if (!all.Exists(a => string.Equals(a, s, StringComparison.OrdinalIgnoreCase))) all.Add(s);
-            foreach (var s in all)
-            {
-                string site = s; bool isOn = on.Exists(a => string.Equals(a, site, StringComparison.OrdinalIgnoreCase));
-                sites.DropDownItems.Add(toggle(site, isOn, () =>
-                {
-                    var cur = new List<string>(Settings.Sites());
-                    if (isOn) cur.RemoveAll(a => string.Equals(a, site, StringComparison.OrdinalIgnoreCase)); else cur.Add(site);
-                    Settings.Distract = string.Join(",", cur);
-                }));
-            }
-            sites.DropDownItems.Add(new ToolStripSeparator());
-            var add = new ToolStripMenuItem("Add a site or app..."); add.Click += delegate { AskSite(); }; sites.DropDownItems.Add(add);
-            var reset = new ToolStripMenuItem("Back to the usual list"); reset.Click += delegate { Settings.Distract = Settings.DefaultDistract; Settings.Save(); }; sites.DropDownItems.Add(reset);
-            m.Items.Add(sites);
-            m.Items.Add(toggle("Stay on screen during focus", Settings.Buddy, () =>
-            {
-                Settings.Buddy = !Settings.Buddy;
+                Settings.Save();
                 if (!Settings.Buddy && roamer != null && roamer.Stay) roamer.Release();
                 if (Settings.Buddy) NextRoam();
-            }));
-            m.Items.Add(new ToolStripSeparator());
-            m.Items.Add(toggle("Break and bedtime reminders", Settings.Remind, () => Settings.Remind = !Settings.Remind));
-            m.Items.Add(toggle("Battery and download alerts", Settings.Alerts, () => Settings.Alerts = !Settings.Alerts));
-            m.Items.Add(new ToolStripSeparator());
-            var name = new ToolStripMenuItem("Change my name..."); name.Click += delegate { AskName(); }; m.Items.Add(name);
-            m.Closed += delegate { BeginInvoke(new Action(m.Dispose)); };
-            m.Show(at);
-        }
-
-        NamePrompt sitePrompt;
-        void AskSite()
-        {
-            if (sitePrompt != null && !sitePrompt.IsDisposed) { sitePrompt.Activate(); return; }
-            float r = (float)rS.X;
-            sitePrompt = new NamePrompt(new RectangleF((float)cx - r, (float)cy - r, r * 2, r * 2), "", text =>
+                Wake();
+            }, name =>
             {
-                text = (text ?? "").Replace(",", " ").Replace("=", " ").Trim();
-                if (text.Length == 0) return;
-                var cur = new List<string>(Settings.Sites());
-                if (!cur.Exists(a => string.Equals(a, text, StringComparison.OrdinalIgnoreCase))) cur.Add(text);
-                Settings.Distract = string.Join(",", cur); Settings.Save();
-            }, "WATCH", "A site or app that distracts you", 30);
-            sitePrompt.FormClosed += delegate { sitePrompt.Dispose(); sitePrompt = null; };
-            sitePrompt.Show();
+                Settings.Name = name; Settings.Asked = true; Settings.Save();
+                if (You().Length > 0) Greet("HELLO" + You(), U.Now);        // say hello by the new name
+                Wake();
+            });
+            petSettings.FormClosed += delegate { petSettings.Dispose(); petSettings = null; };
+            petSettings.Show();
         }
 
         void AskName()
