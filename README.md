@@ -60,7 +60,9 @@
 
 <p>It has moods. It glows <b>green while your laptop charges</b> and hops when you plug in. During a focus session its light turns blue and its eyes go <b>half-lidded, in the zone</b>.<br>It cheers you on at the start, at halfway and with 5 minutes left, and when the timer ends it <b>throws a party</b> and counts your sessions for the day.</p>
 
-<p><b>🚫 The focus guard.</b> Open YouTube, Instagram or Netflix mid-session and, four seconds later, the pet jumps out <b>cross</b>, stomping:<br><b>HEY! NO YOUTUBE</b>. Click it and it closes that tab for you. Right-click if it's for work, and it lets that window be.</p>
+<p>During a session it <b>stays out, above every window</b>, on your taskbar with the minutes left.</p>
+
+<p><b>🚫 The focus guard.</b> Open YouTube, Instagram or Netflix mid-session and, four seconds later, the pet <b>leaps onto the page</b>, cross and stomping:<br><b>HEY! NO YOUTUBE · CLOSING IN 5</b>. It closes that tab itself (or click it to close it now). Right-click if it's for work, and it lets that window be.<br>Come back to it later and it comes back too. <b>Right-click the pet</b> to pick which sites it watches, add your own, or turn any of it off.</p>
 
 <br><br>
 
@@ -99,7 +101,7 @@
 | Click the clock | A thought card unfolds |
 | Right-click or scroll | The menu |
 | Drag, or throw it | It glides and bounces off the screen edges |
-| Right-click the pet | Change your name |
+| Right-click the pet | Its settings: the focus guard, which sites it watches, reminders, your name |
 | Hold the clock still for 2 s | Turn Obsidot off (let go early to cancel) |
 | <kbd>Alt</kbd> + <kbd>K</kbd> | Desktop Assault · <kbd>1</kbd>–<kbd>4</kbd> pick a weapon · <kbd>Esc</kbd> to leave |
 | <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> | Scratchpad |

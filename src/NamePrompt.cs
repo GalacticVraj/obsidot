@@ -14,19 +14,19 @@ namespace Obsidot
         readonly TextBox box;
         readonly Action<string> done;
         readonly Timer anim = new Timer { Interval = 15 };
-        double openT; int y1; bool finished;
+        double openT; int y1; bool finished; readonly string title, question;
         static readonly Color Bg = Color.FromArgb(18, 18, 20), Field = Color.FromArgb(30, 30, 33), Red = Color.FromArgb(232, 36, 32);
 
-        public NamePrompt(RectangleF puck, string current, Action<string> done)
+        public NamePrompt(RectangleF puck, string current, Action<string> done, string title = "HELLO", string question = "What should I call you?", int max = 16)
         {
-            this.done = done;
+            this.done = done; this.title = title; this.question = question;
             FormBorderStyle = FormBorderStyle.None; StartPosition = FormStartPosition.Manual; ShowInTaskbar = true;
             TopMost = true; KeyPreview = true; BackColor = Bg; Text = "Obsidot"; DoubleBuffered = true;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
             Size = new Size((int)(360 * S), (int)(200 * S));
             box = new TextBox
             {
-                BorderStyle = BorderStyle.None, BackColor = Field, ForeColor = Color.FromArgb(244, 244, 246), MaxLength = 16,
+                BorderStyle = BorderStyle.None, BackColor = Field, ForeColor = Color.FromArgb(244, 244, 246), MaxLength = max,
                 Font = new Font("Segoe UI Variable Display", 15f), TextAlign = HorizontalAlignment.Center, Text = current ?? ""
             };
             box.Bounds = new Rectangle((int)(60 * S), (int)(104 * S), Width - (int)(120 * S), box.PreferredHeight);
@@ -65,12 +65,12 @@ namespace Obsidot
         {
             var g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
             // HELLO in the puck's own dot lettering, the red second beside it
-            var d = new Dots(); d.Text3At("HELLO", 0, 0, 1f);
-            float p = 4.2f * S, w = (Dots.W3("HELLO") - 1) * p;
+            var d = new Dots(); d.Text3At(title, 0, 0, 1f);
+            float p = 4.2f * S, w = (Dots.W3(title) - 1) * p;
             Dots.Paint(g, d, Width / 2f - w / 2, 26 * S, p, 3 * S, Color.White, Red);
             using (var br = new SolidBrush(Red)) g.FillEllipse(br, Width / 2f + w / 2 + 9 * S, 40 * S, 6 * S, 6 * S);
             using (var fmt = new StringFormat { Alignment = StringAlignment.Center })
-            using (var br = new SolidBrush(Color.FromArgb(200, 204, 208))) g.DrawString("What should I call you?", U.F("Segoe UI Variable Text", 13 * S), br, Width / 2f, 64 * S, fmt);
+            using (var br = new SolidBrush(Color.FromArgb(200, 204, 208))) g.DrawString(question, U.F("Segoe UI Variable Text", 13 * S), br, Width / 2f, 64 * S, fmt);
             // the field: a dark well with a red line under it
             var fr = new RectangleF(48 * S, 96 * S, Width - 96 * S, box.Height + 16 * S);
             using (var path = U.Round(fr.X, fr.Y, fr.Width, fr.Height, 10 * S)) using (var br = new SolidBrush(Field)) g.FillPath(br, path);

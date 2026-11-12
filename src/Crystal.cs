@@ -71,6 +71,7 @@ namespace Obsidot
                 int n = CountSession();
                 Roam("FOCUS DONE!", n > 1 ? n + " TODAY. NICE WORK" + You() : "NICE WORK" + You(), () => { timerState = 0; }, 60, true);
             }
+            if (timerState != 2 && roamer != null && roamer.Stay) roamer.Release();
             if (timerState == 3)
             {
                 if (alarmN < 4 && now >= doneT + alarmN * 0.55) { Snd.Play(alarmN < 3 ? "buzz" : "done"); Vibe(3.2f, 0.3); alarmN++; }
@@ -439,6 +440,69 @@ namespace Obsidot
         }
 
         NamePrompt namePrompt;
+        // right-click the pet: everything about it, in one small menu
+        void PetMenu(Point at)
+        {
+            var m = DarkMenu.Make();
+            Func<string, bool, Action, ToolStripMenuItem> toggle = (text, isChecked, act) =>
+            {
+                var i = new ToolStripMenuItem(text) { Checked = isChecked };
+                i.Click += delegate { act(); Settings.Save(); Wake(); };
+                return i;
+            };
+            m.Items.Add(new ToolStripMenuItem("While you focus") { Enabled = false });
+            m.Items.Add(toggle("Catch distracting sites", Settings.Guard, () => Settings.Guard = !Settings.Guard));
+            var auto = toggle("Close them by itself", Settings.AutoClose, () => Settings.AutoClose = !Settings.AutoClose); auto.Enabled = Settings.Guard; m.Items.Add(auto);
+            var sites = DarkMenu.Sub("Sites it watches"); sites.Enabled = Settings.Guard;
+            var on = new List<string>(Settings.Sites());
+            var all = new List<string>(Settings.DefaultDistract.Split(','));
+            foreach (var s in on) if (!all.Exists(a => string.Equals(a, s, StringComparison.OrdinalIgnoreCase))) all.Add(s);
+            foreach (var s in all)
+            {
+                string site = s; bool isOn = on.Exists(a => string.Equals(a, site, StringComparison.OrdinalIgnoreCase));
+                sites.DropDownItems.Add(toggle(site, isOn, () =>
+                {
+                    var cur = new List<string>(Settings.Sites());
+                    if (isOn) cur.RemoveAll(a => string.Equals(a, site, StringComparison.OrdinalIgnoreCase)); else cur.Add(site);
+                    Settings.Distract = string.Join(",", cur);
+                }));
+            }
+            sites.DropDownItems.Add(new ToolStripSeparator());
+            var add = new ToolStripMenuItem("Add a site or app..."); add.Click += delegate { AskSite(); }; sites.DropDownItems.Add(add);
+            var reset = new ToolStripMenuItem("Back to the usual list"); reset.Click += delegate { Settings.Distract = Settings.DefaultDistract; Settings.Save(); }; sites.DropDownItems.Add(reset);
+            m.Items.Add(sites);
+            m.Items.Add(toggle("Stay on screen during focus", Settings.Buddy, () =>
+            {
+                Settings.Buddy = !Settings.Buddy;
+                if (!Settings.Buddy && roamer != null && roamer.Stay) roamer.Release();
+                if (Settings.Buddy) NextRoam();
+            }));
+            m.Items.Add(new ToolStripSeparator());
+            m.Items.Add(toggle("Break and bedtime reminders", Settings.Remind, () => Settings.Remind = !Settings.Remind));
+            m.Items.Add(toggle("Battery and download alerts", Settings.Alerts, () => Settings.Alerts = !Settings.Alerts));
+            m.Items.Add(new ToolStripSeparator());
+            var name = new ToolStripMenuItem("Change my name..."); name.Click += delegate { AskName(); }; m.Items.Add(name);
+            m.Closed += delegate { BeginInvoke(new Action(m.Dispose)); };
+            m.Show(at);
+        }
+
+        NamePrompt sitePrompt;
+        void AskSite()
+        {
+            if (sitePrompt != null && !sitePrompt.IsDisposed) { sitePrompt.Activate(); return; }
+            float r = (float)rS.X;
+            sitePrompt = new NamePrompt(new RectangleF((float)cx - r, (float)cy - r, r * 2, r * 2), "", text =>
+            {
+                text = (text ?? "").Replace(",", " ").Replace("=", " ").Trim();
+                if (text.Length == 0) return;
+                var cur = new List<string>(Settings.Sites());
+                if (!cur.Exists(a => string.Equals(a, text, StringComparison.OrdinalIgnoreCase))) cur.Add(text);
+                Settings.Distract = string.Join(",", cur); Settings.Save();
+            }, "WATCH", "A site or app that distracts you", 30);
+            sitePrompt.FormClosed += delegate { sitePrompt.Dispose(); sitePrompt = null; };
+            sitePrompt.Show();
+        }
+
         void AskName()
         {
             if (namePrompt != null && !namePrompt.IsDisposed) { namePrompt.Activate(); return; }
@@ -502,13 +566,36 @@ namespace Obsidot
 
         void NextRoam()
         {
-            if (roamer != null || roamQueue.Count == 0 || game != null || quitT >= 0) return;
+            if (game != null || quitT >= 0) return;
+            if (roamer == null && timerState == 2 && Settings.Buddy) MakeBuddy();   // during focus the pet stays out, above everything
+            if (roamQueue.Count == 0) return;
             var q = roamQueue[0];
             if (!(bool)q[4] && Fullscreen()) return;                       // never interrupt a film or a game; try again later
+            if (roamer != null)
+            {
+                if (!roamer.Stay || roamer.Talking) return;                // a sign is already up
+                roamQueue.RemoveAt(0); roamLine = (string)q[0];
+                string l2 = (string)q[1];
+                roamer.Say((string)q[0], l2 == null ? null : (Func<string>)(() => l2), (Action)q[2], (Action)q[5], (double)q[3], IntPtr.Zero, 0);
+                return;
+            }
             roamQueue.RemoveAt(0);
             roamer = new Roamer(pet, (string)q[0], (string)q[1], (Action)q[2], (double)q[3], (Action)q[5]); roamLine = (string)q[0];
-            roamer.FormClosed += delegate { roamer.Dispose(); roamer = null; pet.Roaming = false; pet.Arrive(U.Now + 0.1); Wake(); NextRoam(); };
-            roamer.Show();
+            Hook(roamer); roamer.Show();
+        }
+
+        // the focus buddy: on the taskbar of the clock's screen, a chip with the minutes left
+        void MakeBuddy()
+        {
+            var b = Roamer.Buddy(pet, Screen.FromPoint(new Point((int)cx, (int)cy)).WorkingArea);
+            b.Idle = () => "FOCUS " + (int)Math.Ceiling(Math.Max(0, Remaining) / 60) + " MIN";
+            b.PetMenu = PetMenu;
+            roamer = b; roamLine = null; Hook(b); b.Show();
+        }
+
+        void Hook(Roamer r)
+        {
+            r.FormClosed += delegate { r.Dispose(); if (roamer == r) roamer = null; pet.Roaming = false; pet.Arrive(U.Now + 0.1); Wake(); NextRoam(); };
         }
 
         static bool Fullscreen()
@@ -529,7 +616,7 @@ namespace Obsidot
             double idle = Pet.IdleSeconds();
             if (idle > 300) { activeSec = 0; breakSaid = false; }           // you took a break: the count starts over
             else if (idle < 60) activeSec += step;
-            if (activeSec > 50 * 60 && !breakSaid && timerState != 2) { breakSaid = true; Roam("BREAK TIME", "50 MIN NONSTOP", null, 30, false); }
+            if (activeSec > 50 * 60 && !breakSaid && timerState != 2 && Settings.Remind) { breakSaid = true; Roam("BREAK TIME", "50 MIN NONSTOP", null, 30, false); }
             if (breakSaid && activeSec > 70 * 60) { breakSaid = false; activeSec = 50 * 60 - 1; }  // still going 20 min later: it asks again
 
             var ps = SystemInformation.PowerStatus;
@@ -540,16 +627,17 @@ namespace Obsidot
                 if (plugged && powerKnown && !wasPlugged) { pet.Cheer(now, true); Snd.Play("plug"); }        // plugged in: a happy hop
                 if (plugged && pct < 100) sawCharge = true;
                 if (!plugged) { sawCharge = false; fullSaid = false; }
-                if (plugged && pct >= 100 && sawCharge && !fullSaid) { fullSaid = true; Roam("BATTERY FULL", "YOU CAN UNPLUG", null, 20, false); }
+                if (plugged && pct >= 100 && sawCharge && !fullSaid && Settings.Alerts) { fullSaid = true; Roam("BATTERY FULL", "YOU CAN UNPLUG", null, 20, false); }
                 if (pet.Charging != (plugged && pct < 100)) { pet.Charging = plugged && pct < 100; Wake(); }  // green while it charges
                 wasPlugged = plugged; powerKnown = true;
                 if (ps.PowerLineStatus == PowerLineStatus.Online) batteryWarned = 0;
+                else if (!Settings.Alerts) { }
                 else if (pct <= 7 && batteryWarned < 2) { batteryWarned = 2; Roam("BATTERY " + pct + "%", "PLUG IN NOW", null, 40, true); }
                 else if (pct <= 15 && batteryWarned < 1) { batteryWarned = 1; Roam("BATTERY " + pct + "%", "PLUG IN SOON", null, 30, true); }
             }
 
             var clock = DateTime.Now;   // up past 1 am and still going: once a night
-            if (clock.Hour >= 1 && clock.Hour < 5 && idle < 30 && lateDay != clock.Date) { lateDay = clock.Date; Roam("ITS LATE", "TIME TO SLEEP" + You(), null, 20, false); }
+            if (clock.Hour >= 1 && clock.Hour < 5 && idle < 30 && lateDay != clock.Date && Settings.Remind) { lateDay = clock.Date; Roam("ITS LATE", "TIME TO SLEEP" + You(), null, 20, false); }
 
             Guard(now, step);
             NextRoam();
@@ -561,21 +649,32 @@ namespace Obsidot
         void Guard(double now, double step)
         {
             IntPtr fg = N.GetForegroundWindow();
-            string site = timerState == 2 && !allowed.Contains(fg) ? Distraction(fg) : null;
+            string site = timerState == 2 && Settings.Guard && !allowed.Contains(fg) ? Distraction(fg) : null;
+            var buddy = roamer != null && roamer.Stay ? roamer : null;
             if (site == null)
             {
-                if (distractSec >= 4 && nags > 0) { pet.Cheer(now, true); Snd.Play("chirp"); Wake(); }       // back to work: it's pleased
-                if (roamer != null && roamLine == nagLine && nagLine != null) roamer.GoHome();
-                distractSec = 0; return;
+                if (buddy != null && buddy.Nagging) { buddy.EndSay(); pet.Cheer(now, true); Snd.Play("chirp"); Wake(); }   // back to work: it's pleased
+                else if (distractSec >= 4 && nags > 0) { pet.Cheer(now, true); Snd.Play("chirp"); Wake(); }
+                if (roamer != null && !roamer.Stay && roamLine == nagLine && nagLine != null) roamer.GoHome();
+                distractSec = 0; lastNag = -100;                           // the next visit gets caught again
+                return;
             }
             distractSec += step;
-            if (distractSec < 4 || now - lastNag < 40 || roamer != null) return;
+            if (distractSec < 4 || now - lastNag < 40) return;
+            if (buddy != null ? buddy.Nagging : roamer != null) return;
             lastNag = now; nags++;
-            int left = (int)Math.Ceiling(Math.Max(0, Remaining) / 60);
-            IntPtr w = fg;
+            IntPtr w = fg; bool browser = IsBrowser(w);
             nagLine = nags == 1 ? "HEY! NO " + site : nags == 2 ? "STILL ON " + site : "BACK TO WORK!";
             pet.Angry(now);
-            Roam(nagLine, (IsBrowser(w) ? "CLICK: CLOSE IT. " : "CLICK: HIDE IT. ") + left + " MIN LEFT", () => CloseDistraction(w, site), 25, true, () => allowed.Add(w));
+            Func<string> hint = () =>
+            {
+                int left = (int)Math.Ceiling(Math.Max(0, Remaining) / 60);
+                if (buddy != null && buddy.AutoLeft > 0) return (browser ? "CLOSING IN " : "HIDING IN ") + buddy.AutoLeft + ". RIGHT-CLICK: ALLOW";
+                return (browser ? "CLICK: CLOSE IT. " : "CLICK: HIDE IT. ") + left + " MIN LEFT";
+            };
+            if (buddy != null) // it flies over onto the distraction itself
+                buddy.Say(nagLine, hint, () => CloseDistraction(w, site), () => allowed.Add(w), 25, w, Settings.AutoClose ? 6 : 0);
+            else Roam(nagLine, hint(), () => CloseDistraction(w, site), 25, true, () => allowed.Add(w));
         }
 
         // the site or app in front, if it's on the distraction list (Settings.Distract, from the window title only)
@@ -602,7 +701,7 @@ namespace Obsidot
         // click on the cross pet: close the distracting tab (Ctrl+W, only if it's still the distraction), or hide the app
         void CloseDistraction(IntPtr w, string site)
         {
-            if (!N.IsWindow(w)) return;
+            if (!N.IsWindow(w) || Distraction(w) != site) return;              // you already moved on: leave it be
             if (!IsBrowser(w)) { N.ShowWindow(w, 6); return; }                  // SW_MINIMIZE
             N.SetForegroundWindow(w);
             var t = new Timer { Interval = 150 };
@@ -614,7 +713,7 @@ namespace Obsidot
                     N.keybd_event(0x11, 0, 0, UIntPtr.Zero); N.keybd_event(0x57, 0, 0, UIntPtr.Zero);   // Ctrl+W: closes that tab only
                     N.keybd_event(0x57, 0, 2, UIntPtr.Zero); N.keybd_event(0x11, 0, 2, UIntPtr.Zero);
                 }
-                else N.ShowWindow(w, 6);
+                else if (Distraction(w) == site) N.ShowWindow(w, 6);           // couldn't bring it forward: hide it instead
             };
             t.Start();
         }
@@ -638,6 +737,7 @@ namespace Obsidot
         void Downloaded(string path)
         {
             string name = System.IO.Path.GetFileName(path), ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+            if (!Settings.Alerts) return;
             if (name.StartsWith(".") || name.StartsWith("~") || ext == ".crdownload" || ext == ".part" || ext == ".partial" || ext == ".tmp" || ext == ".download" || ext == ".opdownload") return;
             double t; if (seenFiles.TryGetValue(path, out t) && U.Now - t < 30) return;
             if (seenFiles.Count > 64) seenFiles.Clear();
@@ -771,7 +871,7 @@ namespace Obsidot
         {
             Wake();
 
-            if (e.Button == MouseButtons.Right && !menuOpen && pet.Hit(e.Location)) { AskName(); return; } // right-click the pet: what should I call you?
+            if (e.Button == MouseButtons.Right && !menuOpen && pet.Hit(e.Location)) { PetMenu(Cursor.Position); return; } // right-click the pet: its settings
             if (e.Button == MouseButtons.Right)
             {
                 if (menuOpen) { menuOpen = false; menuHover = -1; } else OpenMenu();
